@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="AEScalc">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../AEScalc.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../AEScalc.jar!/" />
+    </SOURCES>
+  </library>
+</component>
