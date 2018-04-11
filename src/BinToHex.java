@@ -17,7 +17,7 @@ public class BinToHex
         try
         {
             FileInputStream fis = new FileInputStream("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar.jpg");
-            BufferedWriter fos = new BufferedWriter(new FileWriter("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.jpg"));
+            BufferedWriter fos = new BufferedWriter(new FileWriter("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.txt"));
 
             byte[] bytes = new byte[800];
             int value = 0;
