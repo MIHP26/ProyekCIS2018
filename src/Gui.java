@@ -11,8 +11,10 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
+import java.awt.Window.Type;
 
 public class Gui
 {
@@ -55,7 +57,7 @@ public class Gui
      */
     private void initialize ()
     {
-        frame = new JFrame ();
+        frame = new JFrame ("AES-Encryption and Decryption");
         frame.setBounds (100, 100, 450, 300);
         frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
         
@@ -65,18 +67,38 @@ public class Gui
         JLabel lblXtsaesMode = new JLabel("XTS-AES Mode (256 bits Key)");
         lblXtsaesMode.setFont(new Font("Gadugi", Font.PLAIN, 11));
         
-        JButton btnEncrypt = new JButton("Decrypt");
-        btnEncrypt.addActionListener(new ActionListener() {
+        JButton btnOpenFile = new JButton("Open File");
+        btnOpenFile.addActionListener (new ActionListener() {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                // TODO Auto-generated method stub
+                openFileActionPerformed(e);
+                
+            }         
+        });
+        
+        
+        JButton btnOpenKey = new JButton("Open Key");
+        btnOpenKey.addActionListener (new ActionListener() {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                // TODO Auto-generated method stub
+                openKeyActionPerformed(e);  
+            }         
+        });
+        
+        
+        JButton btnEncrypt = new JButton("Encrypt");
+        
+        JButton btnDecrypt = new JButton("Decrypt");
+        btnDecrypt.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
             }
         });
         
-        JButton button = new JButton("Encrypt");
-        
-        JButton btnOpenFile = new JButton("Open File");
-        
-        JButton btnOpenKey = new JButton("Open Key");
-        
+       
         fileLocation = new JTextField();
         fileLocation.setColumns(10);
         
@@ -84,37 +106,36 @@ public class Gui
         keyLocation.setColumns(10);
         GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
         groupLayout.setHorizontalGroup(
-            groupLayout.createParallelGroup(Alignment.TRAILING)
-                .addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
+            groupLayout.createParallelGroup(Alignment.LEADING)
+                .addGroup(groupLayout.createSequentialGroup()
                     .addGap(144)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(button, GroupLayout.PREFERRED_SIZE, 69, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnEncrypt, GroupLayout.PREFERRED_SIZE, 69, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.UNRELATED)
-                            .addComponent(btnEncrypt))
-                        .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-                            .addGroup(groupLayout.createSequentialGroup()
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(lblEncryptionAndDecryption, GroupLayout.PREFERRED_SIZE, 147, GroupLayout.PREFERRED_SIZE))
-                            .addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
-                                .addGap(5)
-                                .addComponent(lblXtsaesMode))))
+                            .addComponent(btnDecrypt))
+                        .addGroup(groupLayout.createSequentialGroup()
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(lblEncryptionAndDecryption, GroupLayout.PREFERRED_SIZE, 147, GroupLayout.PREFERRED_SIZE))
+                        .addGroup(groupLayout.createSequentialGroup()
+                            .addGap(5)
+                            .addComponent(lblXtsaesMode)))
                     .addContainerGap(140, Short.MAX_VALUE))
-                .addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
+                .addGroup(groupLayout.createSequentialGroup()
                     .addGap(178)
                     .addComponent(btnOpenKey)
                     .addContainerGap(177, Short.MAX_VALUE))
                 .addGroup(groupLayout.createSequentialGroup()
-                    .addContainerGap(181, Short.MAX_VALUE)
-                    .addComponent(btnOpenFile)
-                    .addGap(176))
-                .addGroup(groupLayout.createSequentialGroup()
-                    .addContainerGap(308, Short.MAX_VALUE)
+                    .addContainerGap(114, Short.MAX_VALUE)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addComponent(fileLocation, GroupLayout.PREFERRED_SIZE, 210, GroupLayout.PREFERRED_SIZE)
                         .addComponent(keyLocation, GroupLayout.PREFERRED_SIZE, 210, GroupLayout.PREFERRED_SIZE))
                     .addGap(110))
+                .addGroup(groupLayout.createSequentialGroup()
+                    .addGap(179)
+                    .addComponent(btnOpenFile)
+                    .addContainerGap(178, Short.MAX_VALUE))
         );
         groupLayout.setVerticalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
@@ -133,11 +154,45 @@ public class Gui
                     .addComponent(btnOpenKey)
                     .addGap(24)
                     .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(button)
-                        .addComponent(btnEncrypt))
+                        .addComponent(btnEncrypt)
+                        .addComponent(btnDecrypt))
                     .addGap(22))
         );
         frame.getContentPane().setLayout(groupLayout);
 
+    }
+
+
+    protected void openKeyActionPerformed (ActionEvent e)
+    {
+        // TODO Auto-generated method stub
+        JFileChooser keyChooser = new JFileChooser();
+        int returnVal = keyChooser.showOpenDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = keyChooser.getSelectedFile();
+            try {
+                // return the file path
+                keyLocation.setText(keyChooser.getSelectedFile().getName());
+              } catch (Exception ex) {
+                System.out.println("problem accessing file"+file.getAbsolutePath());
+              }
+        }
+    }
+
+
+    protected void openFileActionPerformed (ActionEvent e)
+    {
+        // TODO Auto-generated method stub
+        JFileChooser fileChooser = new JFileChooser();
+        int returnVal = fileChooser.showOpenDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            try {
+                // return the file path
+                fileLocation.setText(fileChooser.getSelectedFile().getName());
+              } catch (Exception ex) {
+                System.out.println("problem accessing file"+file.getAbsolutePath());
+              }
+        }
     }
 }
