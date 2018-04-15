@@ -22,6 +22,8 @@ public class Gui
     private JFrame frame;
     private JTextField fileLocation;
     private JTextField keyLocation;
+    private String filePath;
+    private String keyPath;
 
 
     /**
@@ -91,6 +93,18 @@ public class Gui
         
         
         JButton btnEncrypt = new JButton("Encrypt");
+        btnEncrypt.addActionListener (new ActionListener() {
+
+            @Override
+            public void actionPerformed (ActionEvent arg0)
+            {
+                // TODO Auto-generated method stub
+                Encrypt keyTest = new Encrypt ();   
+                //tes kunci 
+                keyTest.keyProcessing (keyPath);
+            }
+            
+        });
         
         JButton btnDecrypt = new JButton("Decrypt");
         btnDecrypt.addActionListener(new ActionListener() {
@@ -171,8 +185,10 @@ public class Gui
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = keyChooser.getSelectedFile();
             try {
-                // return the file path
+                //display file name (or path?) 
                 keyLocation.setText(keyChooser.getSelectedFile().getName());
+                // return the file path
+                setKeyPath (file.getAbsolutePath ());
               } catch (Exception ex) {
                 System.out.println("problem accessing file"+file.getAbsolutePath());
               }
@@ -188,11 +204,37 @@ public class Gui
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try {
-                // return the file path
+             //display file name (or path?)   
                 fileLocation.setText(fileChooser.getSelectedFile().getName());
+             // return the file path
+                setFilePath (file.getAbsolutePath ());
               } catch (Exception ex) {
                 System.out.println("problem accessing file"+file.getAbsolutePath());
               }
         }
+    }
+
+
+    public String getFilePath ()
+    {
+        return filePath;
+    }
+
+
+    public void setFilePath (String filePath)
+    {
+        this.filePath = filePath;
+    }
+
+
+    public String getKeyPath ()
+    {
+        return keyPath;
+    }
+
+
+    public void setKeyPath (String keyPath)
+    {
+        this.keyPath = keyPath;
     }
 }
