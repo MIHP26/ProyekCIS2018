@@ -46,11 +46,32 @@ public class XTSAES {
         //fos.close();
     }
 
+    public void byteArraytoFile(byte[] bytes, String filepath) throws IOException
+    {
+        try
+        {
+            //FileInputStream fis = new FileInputStream("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.jpg");
+            FileOutputStream fos = new FileOutputStream(filepath);
+            //BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+            //String s;
+//            while((s = reader.readLine ()) != null) {
+            fos.write(bytes);
+//            }
+//            reader.close ();
+            fos.flush();
+            fos.close();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public void encrypt(String messageFilePath, String keyFilePath, String tweakI, String cipherFilePath) throws IOException {
         // Read file and convert to array of byte
-        //Path messageFilePath = Paths.get(messageFileLocation);
-        //byte[] message = Files.readAllBytes(messageFilePath); // per byte
-        byte[] messages = messageToByteArray(messageFilePath)
+        Path messagePath = Paths.get(messageFilePath);
+        byte[] messages = Files.readAllBytes(messagePath); // per byte
+        //byte[] messages = messageToByteArray(messageFilePath)
         int blocksOfMessages = messages.length/16;
         boolean needStealing = false;
         int unusedLastBlockSpace = 0;
@@ -83,42 +104,55 @@ public class XTSAES {
         String keyHex2 = keyStr.substring(keyStr.length()/2, keyStr.length());
 
         // Convert each key to its char/ascii
-        int a = 0;
-        String key1 = "";
-        while(a < keyHex1.length()) {
-            String temp = keyHex1.substring(a,a+2);
-            int hex = Integer.parseInt(temp, 16);
-            key1 += (char)hex;
-            a = a+2;
-        }
-        byte[] key1arr = key1.getBytes();
+//        int a = 0;
+//        String key1 = "";
+//        while(a < keyHex1.length()) {
+//            String temp = keyHex1.substring(a,a+2);
+//            int hex = Integer.parseInt(temp, 16);
+//            key1 += (char)hex;
+//            a = a+2;
+//        }
+//        byte[] key1arr = key1.getBytes();
+        byte[] key1arr = DatatypeConverter.parseHexBinary(keyHex1);
 
-        a = 0;
-        String key2 = "";
-        while(a < keyHex2.length()) {
-            String temp = keyHex2.substring(a,a+2);
-            int hex = Integer.parseInt(temp, 16);
-            key2 += (char)hex;
-            a = a+2;
-        }
-        byte[] key2arr = key2.getBytes();
+//        a = 0;
+//        String key2 = "";
+//        while(a < keyHex2.length()) {
+//            String temp = keyHex2.substring(a,a+2);
+//            int hex = Integer.parseInt(temp, 16);
+//            key2 += (char)hex;
+//            a = a+2;
+//        }
+//        byte[] key2arr = key2.getBytes();
+        byte[] key1arr = DatatypeConverter.parseHexBinary(keyHex1);
 
         // Tweak
         byte[] tweakArr = tweakI.getBytes();
         byte[] reversedTweakArr = new byte[tweakArr.length];
         // Make it little-endian
         for(int idx = 0; idx < tweakArr.length; idx++) {
-            reversedTweakArr[TweakArr.length-(idx+1)] = TweakArr[idx];
+            reversedTweakArr[tweakArr.length-(idx+1)] = tweakArr[idx];
         }
 
         // Encrypt
-        byte[][] ciphertextArray = xtsAES(XTSAES.ENCRYPT, blockMessage, j, key1arr, key2arr, LittleEndianTweak, needStealing, unusedLastBlockSpace);
+        byte[][] ciphertextArray = xtsAES(XTSAES.ENCRYPT, blockMessage, j, key1arr, key2arr, reversedTweakArr, needStealing, unusedLastBlockSpace);
 
-        printTwo2DByte(blockMessage, ciphertextArray);
-        System.out.println("========================================");
+//        printTwo2DByte(blockMessage, ciphertextArray);
+//        System.out.println("========================================");
+
+        byte[] cipher = new byte[messages.length];
+        int cipherIndex = 0;
+        for(int x = 0; x < ciphertextArray.length; x++){
+            for(int y = 0; y < ciphertextArray[x].length; y++){
+                if(cipherIndex < messages.length){
+                    cipher[cipherIndex] = (ciphertextArray[x][y]);
+                    cipherIndex++;
+                }
+            }
+        }
 
         // write ciphertext file
-        writeByteArrayToFile(ciphertextArray, cipherFilename, message.length);
+        byteArrayToFile(cipher, cipherFilePath);
 
         // Close files
         inputKey.close();
