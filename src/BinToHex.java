@@ -20,13 +20,13 @@ public class BinToHex
 
             byte[] bytes = new byte[800];
             int value = 0;
+            int a = 0;
             do
             {
                 value = fis.read(bytes);
                 fos.write(toHexString(bytes));
-
             }while(value != -1);
-
+            
             fos.flush();
             fos.close();
         }
