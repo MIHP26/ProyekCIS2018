@@ -50,7 +50,7 @@ public class XTSAES {
         // Read file and convert to array of byte
         //Path messageFilePath = Paths.get(messageFileLocation);
         //byte[] message = Files.readAllBytes(messageFilePath); // per byte
-        byte[] messages = messageToByteArray(messageFilePath)
+        byte[] messages = messageToByteArray(messageFilePath);
         int blocksOfMessages = messages.length/16;
         boolean needStealing = false;
         int unusedLastBlockSpace = 0;
