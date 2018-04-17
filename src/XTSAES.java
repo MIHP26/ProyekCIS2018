@@ -46,7 +46,7 @@ public class XTSAES {
         //fos.close();
     }
 
-    public void byteArraytoFile(byte[] bytes, String filepath) throws IOException
+    public void byteArrayToFile(byte[] bytes, String filepath) throws IOException
     {
         //FileInputStream fis = new FileInputStream("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.jpg");
         FileOutputStream fos = new FileOutputStream(filepath);
@@ -68,7 +68,7 @@ public class XTSAES {
         int blocksOfMessages = messages.length/16;
         boolean needStealing = false;
         int unusedLastBlockSpace = 0;
-        if(message.length % 16 != 0) {
+        if(messages.length % 16 != 0) {
             blocksOfMessages = (messages.length/16)+1;
             needStealing = true;
             unusedLastBlockSpace = 16 - (messages.length % 16);
@@ -90,7 +90,7 @@ public class XTSAES {
         }
 
         // Read key
-        BufferedReader inputKey = new BufferedReader(new FileReader(new File(keyFilename)));
+        BufferedReader inputKey = new BufferedReader(new FileReader(new File(keyFilePath)));
         // Key still in HEX
         String keyStr = inputKey.readLine();
         String keyHex1 = keyStr.substring(0, keyStr.length()/2);
@@ -128,7 +128,7 @@ public class XTSAES {
         }
 
         // Encrypt
-        byte[][] ciphertextArray = xtsAES(XTSAES.ENCRYPT, blockMessage, j, key1arr, key2arr, reversedTweakArr, needStealing, unusedLastBlockSpace);
+        byte[][] ciphertextArray = xtsAES(XTSAES.ENCRYPT, blockMessage, blocksOfMessages, key1arr, key2arr, reversedTweakArr, needStealing, unusedLastBlockSpace);
 
 //        printTwo2DByte(blockMessage, ciphertextArray);
 //        System.out.println("========================================");
