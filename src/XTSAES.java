@@ -48,23 +48,16 @@ public class XTSAES {
 
     public void byteArraytoFile(byte[] bytes, String filepath) throws IOException
     {
-        try
-        {
-            //FileInputStream fis = new FileInputStream("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.jpg");
-            FileOutputStream fos = new FileOutputStream(filepath);
-            //BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
-            //String s;
+        //FileInputStream fis = new FileInputStream("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.jpg");
+        FileOutputStream fos = new FileOutputStream(filepath);
+        //BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+        //String s;
 //            while((s = reader.readLine ()) != null) {
-            fos.write(bytes);
+        fos.write(bytes);
 //            }
 //            reader.close ();
-            fos.flush();
-            fos.close();
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
+        fos.flush();
+        fos.close();
     }
 
     public void encrypt(String messageFilePath, String keyFilePath, String tweakI, String cipherFilePath) throws IOException {
