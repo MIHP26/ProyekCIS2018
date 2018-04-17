@@ -12,6 +12,7 @@ public class CobaTes {
         }
         System.out.println(key1);
         byte[] key1arr = key1.getBytes();
-        DatatypeConverter.printHexBinary(key1arr);
+        String s = DatatypeConverter.printHexBinary(key1arr);
+        System.out.println (s);
     }
 }
