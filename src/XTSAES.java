@@ -27,34 +27,50 @@ public class XTSAES {
 		decrypt(cipherFilename, keyFilename, Tweaki, decryptedFilename);
 	}*/
 
-    public void encrypt(String messageFileLocation, String keyFilename, String Tweaki, String cipherFilename) throws IOException {
+    public byte[] messageToByteArray(String filepath) throws IOException
+    {
+        FileInputStream fis = new FileInputStream(filepath);
+        //BufferedWriter fos = new BufferedWriter(new FileWriter("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.txt"));
+
+        byte[] bytes = new byte[800];
+        int value = 0;
+        do {
+            value = fis.read(bytes);
+            //fos.write(toHexString(bytes));
+
+        } while(value != -1);
+
+        return bytes;
+
+        //fos.flush();
+        //fos.close();
+    }
+
+    public void encrypt(String messageFilePath, String keyFilePath, String tweakI, String cipherFilePath) throws IOException {
         // Read file and convert to array of byte
-        Path messageFilePath = Paths.get(messageFileLocation);
-        byte[] message = Files.readAllBytes(messageFilePath); // per byte
-        int messageCounter = 0;
-        int j = 0;
-        boolean needStealing = true;
+        //Path messageFilePath = Paths.get(messageFileLocation);
+        //byte[] message = Files.readAllBytes(messageFilePath); // per byte
+        byte[] messages = messageToByteArray(messageFilePath)
+        int blocksOfMessages = messages.length/16;
+        boolean needStealing = false;
         int unusedLastBlockSpace = 0;
-        if(message.length % 16 == 0) {
-            j = message.length/16;
-            needStealing = false;
-        }
-        else {
-            j = (message.length/16)+1;
+        if(message.length % 16 != 0) {
+            blocksOfMessages = (messages.length/16)+1;
             needStealing = true;
-            unusedLastBlockSpace = 16 - (message.length % 16);
+            unusedLastBlockSpace = 16 - (messages.length % 16);
         }
 
         // Group the message to 2d array
         // column (first dimension) is per block
         // row (second dimension) is per byte in one block
         //		note: 1 block = 16 byte
+        int messageIndex = 0;
         byte[][] blockMessage = new byte[j][16];
-        for(int i = 0; i < j; i++) {
+        for(int i = 0; i < blocksOfMessages; i++) {
             for(int k = 0; k < 16; k++) {
-                if(messageCounter < message.length) {
-                    blockMessage[i][k] = message[messageCounter];
-                    messageCounter++;
+                if(messageIndex < messages.length) {
+                    blockMessage[i][k] = message[messageIndex];
+                    messageIndex++;
                 }
             }
         }
@@ -63,9 +79,8 @@ public class XTSAES {
         BufferedReader inputKey = new BufferedReader(new FileReader(new File(keyFilename)));
         // Key still in HEX
         String keyStr = inputKey.readLine();
-        int keyLength = keyStr.length();
-        String keyHex1 = keyStr.substring(0, keyLength/2);
-        String keyHex2 = keyStr.substring(keyLength/2, keyLength);
+        String keyHex1 = keyStr.substring(0, keyStr.length()/2);
+        String keyHex2 = keyStr.substring(keyStr.length()/2, keyStr.length());
 
         // Convert each key to its char/ascii
         int a = 0;
@@ -89,11 +104,11 @@ public class XTSAES {
         byte[] key2arr = key2.getBytes();
 
         // Tweak
-        byte[] TweakArr = Tweaki.getBytes();
-        byte[] LittleEndianTweak = new byte[TweakArr.length];
+        byte[] tweakArr = tweakI.getBytes();
+        byte[] reversedTweakArr = new byte[tweakArr.length];
         // Make it little-endian
-        for(int idx = 0; idx < TweakArr.length; idx++) {
-            LittleEndianTweak[TweakArr.length-(idx+1)] = TweakArr[idx];
+        for(int idx = 0; idx < tweakArr.length; idx++) {
+            reversedTweakArr[TweakArr.length-(idx+1)] = TweakArr[idx];
         }
 
         // Encrypt
