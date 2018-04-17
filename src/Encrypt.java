@@ -5,6 +5,9 @@ import java.io.InputStreamReader;
 public class Encrypt
 {
 
+    public void readFile (String filePath) {
+        
+    }
 
     public void keyProcessing(String keyPath) {
         try

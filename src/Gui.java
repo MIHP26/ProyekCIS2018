@@ -70,6 +70,7 @@ public class Gui
         lblXtsaesMode.setFont(new Font("Gadugi", Font.PLAIN, 11));
         
         JButton btnOpenFile = new JButton("Open File");
+        btnOpenFile.setFont(new Font("Tahoma", Font.PLAIN, 9));
         btnOpenFile.addActionListener (new ActionListener() {
             @Override
             public void actionPerformed (ActionEvent e)
@@ -82,6 +83,7 @@ public class Gui
         
         
         JButton btnOpenKey = new JButton("Open Key");
+        btnOpenKey.setFont(new Font("Tahoma", Font.PLAIN, 9));
         btnOpenKey.addActionListener (new ActionListener() {
             @Override
             public void actionPerformed (ActionEvent e)
@@ -93,20 +95,24 @@ public class Gui
         
         
         JButton btnEncrypt = new JButton("Encrypt");
+        btnEncrypt.setFont(new Font("Tahoma", Font.PLAIN, 10));
         btnEncrypt.addActionListener (new ActionListener() {
 
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
                 // TODO Auto-generated method stub
-                Encrypt keyTest = new Encrypt ();   
+                Encrypt encryption = new Encrypt ();   
                 //tes kunci 
-                keyTest.keyProcessing (keyPath);
+                /*encryption.keyProcessing (keyPath);*/
+                
+                
             }
             
         });
         
         JButton btnDecrypt = new JButton("Decrypt");
+        btnDecrypt.setFont(new Font("Tahoma", Font.PLAIN, 10));
         btnDecrypt.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
             }
@@ -126,7 +132,7 @@ public class Gui
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(btnEncrypt, GroupLayout.PREFERRED_SIZE, 69, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnEncrypt)
                             .addPreferredGap(ComponentPlacement.UNRELATED)
                             .addComponent(btnDecrypt))
                         .addGroup(groupLayout.createSequentialGroup()
