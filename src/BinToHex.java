@@ -10,7 +10,6 @@ public class BinToHex
     public static String toHexString(byte [] array) {
         return DatatypeConverter.printHexBinary(array);
     }
-
    
     public static void main(final String[] args) throws IOException
     {
