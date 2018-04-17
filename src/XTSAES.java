@@ -62,15 +62,9 @@ public class XTSAES {
 
     public void encrypt(String messageFilePath, String keyFilePath, String tweakI, String cipherFilePath) throws IOException {
         // Read file and convert to array of byte
-<<<<<<< HEAD
-        //Path messageFilePath = Paths.get(messageFileLocation);
-        //byte[] message = Files.readAllBytes(messageFilePath); // per byte
-        byte[] messages = messageToByteArray(messageFilePath);
-=======
         Path messagePath = Paths.get(messageFilePath);
         byte[] messages = Files.readAllBytes(messagePath); // per byte
         //byte[] messages = messageToByteArray(messageFilePath)
->>>>>>> refs/remotes/origin/master
         int blocksOfMessages = messages.length/16;
         boolean needStealing = false;
         int unusedLastBlockSpace = 0;
