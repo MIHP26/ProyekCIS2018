@@ -7,8 +7,6 @@ import java.nio.file.Paths;
 
 public class Encrypt
 {
-
-
     public void preProcessing(String filePath, String keyPath) {
         try
         {
