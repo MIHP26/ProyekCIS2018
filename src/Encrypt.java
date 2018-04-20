@@ -11,6 +11,7 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Encrypt
 {
+
     public byte[] messageToByteArray (String filepath) throws IOException
     {
         FileInputStream fis = new FileInputStream (filepath);
@@ -49,6 +50,7 @@ public class Encrypt
             // divide message into blocks
             int blocksOfMessages = messages.length / 16;
             boolean needStealing = false;
+
             int unusedLastBlockSpace = 0;
             if (messages.length % 16 != 0) {
                 blocksOfMessages = (messages.length / 16) + 1;
