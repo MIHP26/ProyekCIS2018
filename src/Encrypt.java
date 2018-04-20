@@ -37,7 +37,7 @@ public class Encrypt
     }
 
 
-    public void encryption (String filePath, String keyPath, String tweakI,
+    public void encryption (String filePath, String keyPath, String tweakValue,
             String cipherPath)
     {
         try {
@@ -80,7 +80,7 @@ public class Encrypt
             byte[] key2arr = DatatypeConverter.parseHexBinary (k2);
 
             // Tweak
-            byte[] tweakArr = tweakI.getBytes ();
+            byte[] tweakArr = tweakValue.getBytes ();
             byte[] reversedTweakArr = new byte[tweakArr.length];
 
             // Make it little-endian

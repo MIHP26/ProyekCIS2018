@@ -9,9 +9,13 @@ import java.awt.Font;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
+
+import com.sun.nio.file.SensitivityWatchEventModifier;
+
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
 import java.awt.Window.Type;
@@ -24,6 +28,9 @@ public class Gui
     private JTextField keyLocation;
     private String filePath;
     private String keyPath;
+    private String cipherPath;
+    private String tweakValue;
+    private String fileName;
 
 
     /**
@@ -73,7 +80,7 @@ public class Gui
         btnOpenFile.setFont(new Font("Tahoma", Font.PLAIN, 9));
         btnOpenFile.addActionListener (new ActionListener() {
             @Override
-            public void actionPerformed (ActionEvent e)
+            public void actionPerformed (ActionEvent e) 
             {
                 // TODO Auto-generated method stub
                 openFileActionPerformed(e);
@@ -89,7 +96,7 @@ public class Gui
             public void actionPerformed (ActionEvent e)
             {
                 // TODO Auto-generated method stub
-                openKeyActionPerformed(e);  
+                openKeyActionPerformed(e);
             }         
         });
         
@@ -102,9 +109,12 @@ public class Gui
             public void actionPerformed (ActionEvent arg0)
             {
                 // TODO Auto-generated method stub
-                Encrypt encryption = new Encrypt ();   
-                //tes kunci 
-                /*encryption.keyProcessing (keyPath);*/
+                Encrypt encryptFile = new Encrypt ();
+                //belom dideclare
+                setTweakValue ("");
+                //dibuat default
+                setCipherPath (cipherPath + "\\cipher_of_" + fileName);
+                encryptFile.encryption (filePath, keyPath, tweakValue, cipherPath);
                 
                 
             }
@@ -124,6 +134,7 @@ public class Gui
         
         keyLocation = new JTextField();
         keyLocation.setColumns(10);
+       
         GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
         groupLayout.setHorizontalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
@@ -191,7 +202,7 @@ public class Gui
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = keyChooser.getSelectedFile();
             try {
-                //display file name (or path?) 
+                //display the file name 
                 keyLocation.setText(keyChooser.getSelectedFile().getName());
                 // return the file path
                 setKeyPath (file.getAbsolutePath ());
@@ -214,16 +225,14 @@ public class Gui
                 fileLocation.setText(fileChooser.getSelectedFile().getName());
              // return the file path
                 setFilePath (file.getAbsolutePath ());
+                //set default cipherpath
+                setCipherPath (file.getAbsoluteFile ().getParent ());
+                fileName = file.getName ();
+            
               } catch (Exception ex) {
                 System.out.println("problem accessing file"+file.getAbsolutePath());
               }
         }
-    }
-
-
-    public String getFilePath ()
-    {
-        return filePath;
     }
 
 
@@ -233,14 +242,21 @@ public class Gui
     }
 
 
-    public String getKeyPath ()
-    {
-        return keyPath;
-    }
-
-
     public void setKeyPath (String keyPath)
     {
         this.keyPath = keyPath;
+    }
+
+
+
+    public void setCipherPath (String cipherPath)
+    {
+        this.cipherPath = cipherPath;
+    }
+   
+
+    public void setTweakValue (String tweakValue)
+    {
+        this. tweakValue =  tweakValue;
     }
 }
