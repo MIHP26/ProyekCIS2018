@@ -1,9 +1,15 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import javax.xml.bind.DatatypeConverter;
 
 public class Decrypt
 {
@@ -13,19 +19,18 @@ public class Decrypt
         Path cipherPath = Paths.get(cipherFilePath);
         byte[] ciphers = Files.readAllBytes(cipherPath); // per byte
 
-        int blocksOfCiphers = ciphers.length / 16);
+        int blocksOfCiphers = ciphers.length /16;
         boolean needStealing = false;
         int unusedLastBlockSpace = 0;
-        if (message.length % 16 != 0) {
+        if (ciphers.length % 16 != 0) {
             blocksOfCiphers = (ciphers.length / 16) + 1;
             needStealing = true;
             unusedLastBlockSpace = 16 - (ciphers.length % 16);
         }
 
-        // Group the message to 2d array
-        // column (first dimension) is per block
-        // row (second dimension) is per byte in one block
-        // note: 1 block = 16 byte
+        // convert the cipher into 2d array
+        // column represents block
+        // row represents byte in one block
         int cipherIndex = 0;
         byte[][] blockCipher = new byte[j][16];
         for (int i = 0; i < j; i++) {
