@@ -147,108 +147,113 @@ public class Decrypt
         }
 
 
-        if (needStealing) { // jumlah block harus minimal 2
-            // 2. Create PP
-            // For all block except index j-2 and j-1 (last)
-            // Calculate PP for all blocks except block index j-1
-            int lastTwo = blocksOfCiphers - 2;
-            for (int i = 0; i < lastTwo; i++) { // i represent block number
-                for (int p = 0; p < 16; p++) {
-                    pp[i][p] = (byte) (blockCipher[i][p] ^ tweakXORAlpha[i + 1][p]);
+        if (needStealing) {
+            // jumlah block harus minimal 2
+            if (blocksOfCiphers < 2) {
+                System.out.println("Jumlah block tidak lebih dari 1");
+            } else {
+                // 2. Create PP
+                // For all block except index j-2 and j-1 (last)
+                // Calculate PP for all blocks except block index j-1
+                int lastTwo = blocksOfCiphers - 2;
+                for (int i = 0; i < lastTwo; i++) { // i represent block number
+                    for (int p = 0; p < 16; p++) {
+                        pp[i][p] = (byte) (blockCipher[i][p] ^ tweakXORAlpha[i + 1][p]);
+                    }
                 }
-            }
 
-            // 3. Create CC
-            // Calculate CC for all blocks except block index j-1
-            for (int i = 0; i < lastTwo; i++) { // i represent block number
+                // 3. Create CC
+                // Calculate CC for all blocks except block index j-1
+                for (int i = 0; i < lastTwo; i++) { // i represent block number
+                    cc[i] = key1AES.decrypt(pp[i]);
+                }
+
+                // 4. Calculate cipher text
+                // Calculate cipher text for all blocks except block index j-1
+                for (int i = 0; i < lastTwo; i++) { // i represent block number
+                    for (int p = 0; p < 16; p++) {
+                        plaintextArray[i][p] = (byte) (cc[i][p] ^ tweakXORAlpha[i + 1][p]);
+                    }
+                }
+
+                // ==== Special treatment for block index j-2 & j-1 (last block)
+                // ====
+                // evaluate block index j-2
+
+                // PP
+
+
+                for (int p = 0; p < 16; p++) {
+                    pp[lastTwo][p] = (byte) (blockCipher[lastTwo][p] ^ tweakXORAlpha[lastTwo + 2][p]); // menggunakan
+                    // T
+                    // ke
+                    // m
+                }
+
+                // CC
+                cc[lastTwo] = key1AES.decrypt(pp[lastTwo]);
+
+                // ciphertext
+                for (int p = 0; p < 16; p++) {
+                    plaintextArray[lastTwo][p] = (byte) (cc[lastTwo][p] ^ tweakXORAlpha[lastTwo + 2][p]); // menggunakan
+                    // T
+                    // ke
+                    // m
+                }
+
+                // evaluate block index j - 1
+                // Append Last Block Plaintext with Ciphertext (size:
+                // unusedLastBlockSpace) block number j-2
+                int lastOne = blocksOfCiphers - 1;
+                int startIndex = 16 - unusedLastBlockSpace;
+                byte[] modifiedLastBlock = new byte[16];
+                // copy original last block to modifiedLastBlock
+                for (int idx = 0; idx < startIndex; idx++) {
+                    modifiedLastBlock[idx] = blockCipher[lastOne][idx];
+                }
+
+                for (int idx = startIndex; idx < 16; idx++) {
+                    modifiedLastBlock[idx] = plaintextArray[lastTwo][idx];
+                }
+
+                int i = blocksOfCiphers - 1;
+                // Calculate PP
+                for (int p = 0; p < 16; p++) {
+                    pp[i][p] = (byte) (modifiedLastBlock[p] ^ tweakXORAlpha[i][p]); // menggunakan
+                    // T
+                    // ke
+                    // m-1
+                }
+
+                // Calculate CC
                 cc[i] = key1AES.decrypt(pp[i]);
-            }
 
-            // 4. Calculate cipher text
-            // Calculate cipher text for all blocks except block index j-1
-            for (int i = 0; i < lastTwo; i++) { // i represent block number
+                // Calculate ciphertext
                 for (int p = 0; p < 16; p++) {
-                    plaintextArray[i][p] = (byte) (cc[i][p] ^ tweakXORAlpha[i + 1][p]);
+                    plaintextArray[lastOne][p] = (byte) (cc[i][p] ^ tweakXORAlpha[lastOne][p]); // menggunakan
+                    // T
+                    // ke
+                    // m-1
                 }
-            }
 
-            // ==== Special treatment for block index j-2 & j-1 (last block)
-            // ====
-            // evaluate block index j-2
-
-            // PP
-
-
-            for (int p = 0; p < 16; p++) {
-                pp[lastTwo][p] = (byte) (blockCipher[lastTwo][p] ^ tweakXORAlpha[lastTwo + 2][p]); // menggunakan
-                // T
-                // ke
-                // m
-            }
-
-            // CC
-            cc[lastTwo] = key1AES.decrypt(pp[lastTwo]);
-
-            // ciphertext
-            for (int p = 0; p < 16; p++) {
-                plaintextArray[lastTwo][p] = (byte) (cc[lastTwo][p] ^ tweakXORAlpha[lastTwo + 2][p]); // menggunakan
-                // T
-                // ke
-                // m
-            }
-
-            // evaluate block index j - 1
-            // Append Last Block Plaintext with Ciphertext (size:
-            // unusedLastBlockSpace) block number j-2
-            int lastOne = blocksOfCiphers - 1;
-            int startIndex = 16 - unusedLastBlockSpace;
-            byte[] modifiedLastBlock = new byte[16];
-            // copy original last block to modifiedLastBlock
-            for (int idx = 0; idx < startIndex; idx++) {
-                modifiedLastBlock[idx] = blockCipher[lastOne][idx];
-            }
-
-            for (int idx = startIndex; idx < 16; idx++) {
-                modifiedLastBlock[idx] = plaintextArray[lastTwo][idx];
-            }
-
-            int i = blocksOfCiphers - 1;
-            // Calculate PP
-            for (int p = 0; p < 16; p++) {
-                pp[i][p] = (byte) (modifiedLastBlock[p] ^ tweakXORAlpha[i][p]); // menggunakan
-                // T
-                // ke
-                // m-1
-            }
-
-            // Calculate CC
-            cc[i] = key1AES.decrypt(pp[i]);
-
-            // Calculate ciphertext
-            for (int p = 0; p < 16; p++) {
-                plaintextArray[lastOne][p] = (byte) (cc[i][p] ^ tweakXORAlpha[lastOne][p]); // menggunakan
-                // T
-                // ke
-                // m-1
-            }
-
-            // Swap j-1 ciphertext with cropped j-2 ciphertext
-            byte[] lastCiphertext = new byte[16];
-            for (int idx = 0; idx < 16; idx++) {
-                lastCiphertext[idx] = plaintextArray[lastOne][idx];
-            }
-            // copy cropped block j-2 to last block
-            for (int idx = 0; idx < 16; idx++) {
-
-                if (idx < startIndex) {
-                    plaintextArray[lastOne][idx] = plaintextArray[lastTwo][idx];
-                } else {
-                    plaintextArray[lastOne][idx] = (byte) 0;
+                // Swap j-1 ciphertext with cropped j-2 ciphertext
+                byte[] lastCiphertext = new byte[16];
+                for (int idx = 0; idx < 16; idx++) {
+                    lastCiphertext[idx] = plaintextArray[lastOne][idx];
                 }
-            }
-            // copy last block (original) to block j - 2
-            for (int idx = 0; idx < 16; idx++) {
-                plaintextArray[lastTwo][idx] = lastCiphertext[idx];
+                // copy cropped block j-2 to last block
+                for (int idx = 0; idx < 16; idx++) {
+
+                    if (idx < startIndex) {
+                        plaintextArray[lastOne][idx] = plaintextArray[lastTwo][idx];
+                    } else {
+                        plaintextArray[lastOne][idx] = (byte) 0;
+                    }
+                }
+                // copy last block (original) to block j - 2
+                for (int idx = 0; idx < 16; idx++) {
+                    plaintextArray[lastTwo][idx] = lastCiphertext[idx];
+                }
             }
         } else {
             // 2. Create PP
@@ -272,7 +277,6 @@ public class Decrypt
                     plaintextArray[i][p] = (byte) (cc[i][p] ^ tweakXORAlpha[i + 1][p]);
                 }
             }
-            System.out.println("Jumlah block tidak lebih dari 1");
         }
 
         return plaintextArray;
