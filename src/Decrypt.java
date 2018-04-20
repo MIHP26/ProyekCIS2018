@@ -1,8 +1,15 @@
-import javax.xml.bind.DatatypeConverter;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import javax.xml.bind.DatatypeConverter;
 
 public class Decrypt
 {
@@ -15,7 +22,7 @@ public class Decrypt
         int blocksOfCiphers = (ciphers.length / 16);
         boolean needStealing = false;
         int unusedLastBlockSpace = 0;
-        if (ciphers.length % 16 != 0) {
+        if (message.length % 16 != 0) {
             blocksOfCiphers = (ciphers.length / 16) + 1;
             needStealing = true;
             unusedLastBlockSpace = 16 - (ciphers.length % 16);

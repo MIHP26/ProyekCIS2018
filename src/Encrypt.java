@@ -4,7 +4,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javax.xml.bind.DatatypeConverter;
@@ -38,7 +37,7 @@ public class Encrypt
     }
 
 
-    public void encryption (String filePath, String keyPath, String tweakI,
+    public void encryption (String filePath, String keyPath, String tweakValue,
             String cipherPath)
     {
         try {
@@ -82,7 +81,7 @@ public class Encrypt
             byte[] key2arr = DatatypeConverter.parseHexBinary (k2);
 
             // Tweak
-            byte[] tweakArr = tweakI.getBytes ();
+            byte[] tweakArr = tweakValue.getBytes ();
             byte[] reversedTweakArr = new byte[tweakArr.length];
 
             // Make it little-endian
@@ -91,9 +90,9 @@ public class Encrypt
             }
 
             // Encrypt
-            byte[][] ciphertextArray = xtsAES (XTSAES.ENCRYPT, blockMessage,
-                    blocksOfMessages, key1arr, key2arr, reversedTweakArr,
-                    needStealing, unusedLastBlockSpace);
+            byte[][] ciphertextArray = xtsAES (blockMessage, blocksOfMessages,
+                    key1arr, key2arr, reversedTweakArr, needStealing,
+                    unusedLastBlockSpace);
 
             byte[] cipher = new byte[messages.length];
             int cipherIndex = 0;
@@ -119,127 +118,110 @@ public class Encrypt
         }
     }
 
-    //BELUM DIMODIF
-    public static byte[][] xtsAES (int activity, byte[][] blockMessage, int j,
-            byte[] key1arr, byte[] key2arr, byte[] LittleEndianTweak,
-            boolean needStealing, int unusedLastBlockSpace)
+
+    public static byte[][] xtsAES (byte[][] blockMessage, int j, byte[] key1arr,
+            byte[] key2arr, byte[] LittleEndianTweak, boolean needStealing,
+            int unusedLastBlockSpace)
     {
-        // Alpha
+
         // int alpha = 135;
+        // 135 is modulus of Galois Field (2^128)
 
         // Make AES object to encrypt plain text with key 1
-        AES objek1 = new AES ();
-        objek1.setKey (key1arr);
+        AES keyAES1 = new AES ();
+        keyAES1.setKey (key1arr);
 
         // Make AES object to encrypt tweak with key 2
-        AES objek2 = new AES ();
-        objek2.setKey (key2arr);
+        AES keyAES2 = new AES ();
+        keyAES2.setKey (key2arr);
 
-        // Encryption process start here
+        // Initialize
+        byte[][] ciphertextArray = new byte[j][16];
         byte[][] PP = new byte[j][16];
         byte[][] CC = new byte[j][16];
-        byte[][] ciphertextArray = new byte[j][16];
 
-        // 1. Create T
-        // Encrypt Key2 + i with AES Encrypt = tweakEncrypted
-        byte[] tweakEncrypted = objek2.encrypt (LittleEndianTweak);
+        // 1. Calculate T
+        // First, encrypt Key2 + i with AES Encrypt
+        byte[] encryptedTweak = keyAES2.encrypt (LittleEndianTweak);
 
-        // Multiplication alpha^j + tweakEncrypted = T = mul
-        // Calculate T FOR ALL BLOCKS
-        byte[][] mul = new byte[j + 1][16];
-        mul[0] = tweakEncrypted;
+        // T = Multiplication alpha^j and encrypted tweak
+        // Calculate T for each blocks
+        byte[][] t = new byte[j + 1][16];
+        t[0] = encryptedTweak;
         for (int i = 0; i < j; i++) {
             for (int k = 0; k < 16; k++) {
                 if (k == 0) {
-                    mul[i + 1][k] = (byte) ((2 * (mul[i][k] % 128))
-                            ^ (135 * (mul[i][15] / 128)));
+                    t[i + 1][k] = (byte) ((2 * (t[i][k] % 128))
+                            ^ (135 * (t[i][15] / 128)));
                 } else {
-                    mul[i + 1][k] = (byte) ((2 * (mul[i][k] % 128))
-                            ^ ((mul[i][k - 1] / 128)));
+                    t[i + 1][k] = (byte) ((2 * (t[i][k] % 128))
+                            ^ ((t[i][k - 1] / 128)));
                 }
             }
         }
 
-        // 2. Create PP
-        if (j > 2) { // jumlah block harus minimal 2
-            // For all block except index j-2 and j-1 (last)
-            // Calculate PP for all blocks except block index j-1
-            for (int i = 0; i < j - 2; i++) { // i represent block number
+        
+        if (needStealing == false) {
+            // 2. Calculate PP
+            for (int i = 0; i < j; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
-                    PP[i][p] = (byte) (blockMessage[i][p] ^ mul[i + 1][p]);
+                    PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
                 }
             }
 
-            // 3. Create CC
-            // Calculate CC for all blocks except block index j-1
-            for (int i = 0; i < j - 2; i++) { // i represent block number
-                if (activity == XTSAES.ENCRYPT) {
-                    CC[i] = objek1.encrypt (PP[i]);
-                } else {
-                    CC[i] = objek1.decrypt (PP[i]);
+            // 3. Calculate CC for all blocks
+            for (int i = 0; i < j; i++) { // i represents block number
+                CC[i] = keyAES1.encrypt (PP[i]);
+            }
+
+            // 4. Calculate cipher text
+            for (int i = 0; i < j; i++) { // i represent block number
+                for (int p = 0; p < 16; p++) {
+                    ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
                 }
+            }
+        } else if (needStealing == true && j > 2) {
+            // 2. Calculate PP for all blocks except two last blocks (index j-2 & j-1)
+            for (int i = 0; i < j - 2; i++) { // i represent block number
+                for (int p = 0; p < 16; p++) {
+                    PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
+                }
+            }
+
+            // 3. Calculate CC for all blocks except two last blocks (index j-2 & j-1)
+            for (int i = 0; i < j - 2; i++) { // i represents block number
+                CC[i] = keyAES1.encrypt (PP[i]);
             }
 
             // 4. Calculate cipher text
             // Calculate cipher text for all blocks except block index j-1
             for (int i = 0; i < j - 1; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
-                    ciphertextArray[i][p] = (byte) (CC[i][p] ^ mul[i + 1][p]);
+                    ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
                 }
             }
 
-            // ==== Special treatment for block index j-2 & j-1 (last block)
-            // ====
+            // ===Treatment for the last two blocks===
             // evaluate block index j-2
-            if (activity == XTSAES.ENCRYPT) {
-                // PP
-                for (int p = 0; p < 16; p++) {
-                    int i = j - 2;
-                    PP[i][p] = (byte) (blockMessage[i][p] ^ mul[i + 1][p]);
-                }
-                // CC
-                if (activity == XTSAES.ENCRYPT) {
-                    int i = j - 2;
-                    CC[i] = objek1.encrypt (PP[i]);
-                } else {
-                    int i = j - 2;
-                    CC[i] = objek1.decrypt (PP[i]);
-                }
-                // ciphertext
-                for (int p = 0; p < 16; p++) {
-                    int i = j - 2;
-                    ciphertextArray[i][p] = (byte) (CC[i][p] ^ mul[i + 1][p]);
-                }
-            } else {
-                // PP
-                for (int p = 0; p < 16; p++) {
-                    int i = j - 2;
-                    PP[i][p] = (byte) (blockMessage[i][p] ^ mul[i + 2][p]); // menggunakan
-                                                                            // T
-                                                                            // ke
-                                                                            // m
-                }
-                // CC
-                if (activity == XTSAES.ENCRYPT) {
-                    int i = j - 2;
-                    CC[i] = objek1.encrypt (PP[i]);
-                } else {
-                    int i = j - 2;
-                    CC[i] = objek1.decrypt (PP[i]);
-                }
-                // ciphertext
-                for (int p = 0; p < 16; p++) {
-                    int i = j - 2;
-                    ciphertextArray[i][p] = (byte) (CC[i][p] ^ mul[i + 2][p]); // menggunakan
-                                                                               // T
-                                                                               // ke
-                                                                               // m
-                }
+            
+            // PP
+            for (int p = 0; p < 16; p++) {
+                int i = j - 2;
+                PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
+            }
+            // CC
+            CC[j - 2] = keyAES1.encrypt (PP[j - 2]);
+
+            // ciphertext
+            for (int p = 0; p < 16; p++) {
+                int i = j - 2;
+                ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
             }
 
-            // evaluate block index j - 1
+            // evaluate last block (index j - 1)
             // Append Last Block Plaintext with Ciphertext (size:
             // unusedLastBlockSpace) block number j-2
+
             int startByteID = 16 - unusedLastBlockSpace;
             int endByteID = 16 - 1;
             byte[] modifiedLastBlock = new byte[16];
@@ -254,40 +236,25 @@ public class Encrypt
             // Calculate PP
             for (int p = 0; p < 16; p++) {
                 int i = j - 1;
-                if (activity == XTSAES.ENCRYPT) {
-                    PP[i][p] = (byte) (modifiedLastBlock[p] ^ mul[i + 1][p]);
-                } else {
-                    PP[i][p] = (byte) (modifiedLastBlock[p] ^ mul[i][p]); // menggunakan
-                                                                          // T
-                                                                          // ke
-                                                                          // m-1
-                }
+
+                PP[i][p] = (byte) (modifiedLastBlock[p] ^ t[i + 1][p]);
 
             }
             // Calculate CC
-            if (activity == XTSAES.ENCRYPT) {
-                CC[j - 1] = objek1.encrypt (PP[j - 1]);
-            } else {
-                CC[j - 1] = objek1.decrypt (PP[j - 1]);
-            }
+            CC[j - 1] = keyAES1.encrypt (PP[j - 1]);
+
             // Calculate ciphertext
             for (int p = 0; p < 16; p++) {
                 int i = j - 1;
-                if (activity == XTSAES.ENCRYPT) {
-                    ciphertextArray[i][p] = (byte) (CC[i][p] ^ mul[i + 1][p]);
-                } else {
-                    ciphertextArray[i][p] = (byte) (CC[i][p] ^ mul[i][p]); // menggunakan
-                                                                           // T
-                                                                           // ke
-                                                                           // m-1
-                }
-
+                ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
             }
+
             // Swap j-1 ciphertext with cropped j-2 ciphertext
             byte[] lastCiphertextMaster = new byte[16];
             for (int byteID = 0; byteID <= 15; byteID++) {
                 lastCiphertextMaster[byteID] = ciphertextArray[j - 1][byteID];
             }
+
             // copy cropped block j-2 to last block
             for (int byteID = 0; byteID <= 15; byteID++) {
 
@@ -302,8 +269,9 @@ public class Encrypt
             for (int byteID = 0; byteID <= 15; byteID++) {
                 ciphertextArray[j - 2][byteID] = lastCiphertextMaster[byteID];
             }
-        } else { // jumlah block kurang dari 2
-            System.out.println ("Jumlah block tidak lebih dari 1");
+        } else {
+            //????
+            System.out.println ("The number of block is less than 2");
         }
 
         return ciphertextArray;
