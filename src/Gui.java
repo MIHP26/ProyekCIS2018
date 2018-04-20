@@ -28,7 +28,7 @@ public class Gui
     private JTextField keyLocation;
     private String filePath;
     private String keyPath;
-    private String cipherPath;
+    private String resultPath;
     private String tweakValue;
     private String fileName;
 
@@ -113,18 +113,24 @@ public class Gui
                 //belom dideclare
                 setTweakValue ("");
                 //dibuat default
-                setCipherPath (cipherPath + "\\cipher_of_" + fileName);
-                encryptFile.encryption (filePath, keyPath, tweakValue, cipherPath);
-                
-                
+                setResultPath (resultPath + "\\cipher_of_" + fileName);
+                encryptFile.encryption (filePath, keyPath, tweakValue, resultPath);  
             }
-            
         });
         
         JButton btnDecrypt = new JButton("Decrypt");
         btnDecrypt.setFont(new Font("Tahoma", Font.PLAIN, 10));
         btnDecrypt.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
+            @Override
+            public void actionPerformed (ActionEvent arg0)
+            {
+                // TODO Auto-generated method stub
+                Encrypt encryptFile = new Encrypt ();
+                //belom dideclare
+                setTweakValue ("");
+                //dibuat default
+                setResultPath (resultPath + "\\messages_in_" + fileName);
+                encryptFile.encryption (filePath, keyPath, tweakValue, resultPath);  
             }
         });
         
@@ -221,12 +227,12 @@ public class Gui
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try {
-             //display file name (or path?)   
+             //display file name  
                 fileLocation.setText(fileChooser.getSelectedFile().getName());
              // return the file path
                 setFilePath (file.getAbsolutePath ());
                 //set default cipherpath
-                setCipherPath (file.getAbsoluteFile ().getParent ());
+                setResultPath (file.getAbsoluteFile ().getParent ());
                 fileName = file.getName ();
             
               } catch (Exception ex) {
@@ -249,9 +255,9 @@ public class Gui
 
 
 
-    public void setCipherPath (String cipherPath)
+    public void setResultPath (String resultPath)
     {
-        this.cipherPath = cipherPath;
+        this.resultPath = resultPath;
     }
    
 

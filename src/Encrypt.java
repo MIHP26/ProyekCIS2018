@@ -4,7 +4,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javax.xml.bind.DatatypeConverter;
@@ -120,7 +119,6 @@ public class Encrypt
     }
 
 
-    // BELUM DIMODIF
     public static byte[][] xtsAES (byte[][] blockMessage, int j, byte[] key1arr,
             byte[] key2arr, byte[] LittleEndianTweak, boolean needStealing,
             int unusedLastBlockSpace)
@@ -162,19 +160,35 @@ public class Encrypt
             }
         }
 
-        // 2. Calculate PP
-        if (j < 2) { //total blocks should more than 2
-            System.out.println ("Jumlah blok kurang dari 2");
-        } else {
-            // For all block except index j-2 and j-1 (last)
-            // Calculate PP for all blocks except block index j-1
+        
+        if (needStealing == false) {
+            // 2. Calculate PP
+            for (int i = 0; i < j; i++) { // i represent block number
+                for (int p = 0; p < 16; p++) {
+                    PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
+                }
+            }
+
+            // 3. Calculate CC for all blocks
+            for (int i = 0; i < j; i++) { // i represents block number
+                CC[i] = keyAES1.encrypt (PP[i]);
+            }
+
+            // 4. Calculate cipher text
+            for (int i = 0; i < j; i++) { // i represent block number
+                for (int p = 0; p < 16; p++) {
+                    ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
+                }
+            }
+        } else if (needStealing == true && j > 2) {
+            // 2. Calculate PP for all blocks except two last blocks (index j-2 & j-1)
             for (int i = 0; i < j - 2; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
                     PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
                 }
             }
 
-            // 3. Calculate CC for all blocks except block index j-1
+            // 3. Calculate CC for all blocks except two last blocks (index j-2 & j-1)
             for (int i = 0; i < j - 2; i++) { // i represents block number
                 CC[i] = keyAES1.encrypt (PP[i]);
             }
@@ -187,10 +201,9 @@ public class Encrypt
                 }
             }
 
-            // ==== Special treatment for block index j-2 & j-1 (last block)
-            // ====
+            // ===Treatment for the last two blocks===
             // evaluate block index j-2
-
+            
             // PP
             for (int p = 0; p < 16; p++) {
                 int i = j - 2;
@@ -205,7 +218,7 @@ public class Encrypt
                 ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
             }
 
-            // evaluate block index j - 1
+            // evaluate last block (index j - 1)
             // Append Last Block Plaintext with Ciphertext (size:
             // unusedLastBlockSpace) block number j-2
 
@@ -256,7 +269,10 @@ public class Encrypt
             for (int byteID = 0; byteID <= 15; byteID++) {
                 ciphertextArray[j - 2][byteID] = lastCiphertextMaster[byteID];
             }
-        } 
+        } else {
+            //????
+            System.out.println ("The number of block is less than 2");
+        }
 
         return ciphertextArray;
     }
