@@ -22,7 +22,6 @@ import java.awt.Window.Type;
 
 public class Gui
 {
-
     private JFrame frame;
     private JTextField fileLocation;
     private JTextField keyLocation;
@@ -88,7 +87,6 @@ public class Gui
             }         
         });
         
-        
         JButton btnOpenKey = new JButton("Open Key");
         btnOpenKey.setFont(new Font("Tahoma", Font.PLAIN, 9));
         btnOpenKey.addActionListener (new ActionListener() {
@@ -137,7 +135,6 @@ public class Gui
             }
         });
         
-       
         fileLocation = new JTextField();
         fileLocation.setColumns(10);
         
@@ -199,7 +196,6 @@ public class Gui
 
     }
 
-
     protected void openKeyActionPerformed (ActionEvent e)
     {
         // TODO Auto-generated method stub
@@ -218,7 +214,6 @@ public class Gui
         }
     }
 
-
     protected void openFileActionPerformed (ActionEvent e)
     {
         // TODO Auto-generated method stub
@@ -232,7 +227,7 @@ public class Gui
              // return the file path
                 setFilePath (file.getAbsolutePath());
                 //set default cipherpath
-                setResultPath(file.getAbsoluteFile().getParent()+"/");
+                setResultPath(file.getAbsoluteFile().getParent()+File.separator);
 //                System.out.println(file.getCanonicalPath());
 //                System.out.println(file.getCanonicalFile().getParent());
                 System.out.println(resultPath);
@@ -255,8 +250,6 @@ public class Gui
     {
         this.keyPath = keyPath;
     }
-
-
 
     public void setResultPath (String resultPath)
     {
