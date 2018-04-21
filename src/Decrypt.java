@@ -13,7 +13,7 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Decrypt
 {
-    public static void decrypt(String cipherFilePath, String keyFilePath, String tweakI, String messageFilePath)
+    public static void decryption(String cipherFilePath, String keyFilePath, String tweakI, String messageFilePath)
             throws IOException {
         // Read file and convert to array of byte
         Path cipherPath = Paths.get(cipherFilePath);

@@ -10,8 +10,7 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Encrypt
 {
-
-    public byte[] messageToByteArray (String filepath) throws IOException
+    public static byte[] messageToByteArray (String filepath) throws IOException
     {
         FileInputStream fis = new FileInputStream (filepath);
         byte[] bytes = new byte[800];
@@ -26,7 +25,7 @@ public class Encrypt
     }
 
 
-    public void byteArrayToFile (byte[] bytes, String filepath)
+    public static void byteArrayToFile (byte[] bytes, String filepath)
             throws IOException
     {
 
@@ -37,7 +36,7 @@ public class Encrypt
     }
 
 
-    public void encryption (String filePath, String keyPath, String tweakValue,
+    public static void encryption (String filePath, String keyPath, String tweakValue,
             String cipherPath)
     {
         try {
