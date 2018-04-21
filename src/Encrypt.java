@@ -182,7 +182,7 @@ public class Encrypt
                     ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
                 }
             }
-        } else if (needStealing == true && j > 2) {
+        } else if (needStealing == true && j >= 2) {
             // 2. Calculate PP for all blocks except two last blocks (index j-2
             // & j-1)
             for (int i = 0; i < lastTwo; i++) { // i represent block number
