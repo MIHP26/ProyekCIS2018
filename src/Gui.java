@@ -29,7 +29,7 @@ public class Gui
     private String filePath;
     private String keyPath;
     private String resultPath;
-    private String tweakValue;
+    private String tweakValue = "c7192a71054bfeda";
     private String fileName;
 
 
@@ -110,7 +110,8 @@ public class Gui
             {
                 // TODO Auto-generated method stub
                 //belom dideclare
-                setTweakValue ("");
+            	
+//                setTweakValue ("");
                 //dibuat default
                 setResultPath (resultPath + "\\cipher_of_" + fileName);
                 Encrypt.encryption (filePath, keyPath, tweakValue, resultPath);  
@@ -125,7 +126,7 @@ public class Gui
             {
                 // TODO Auto-generated method stub
                 //belom dideclare
-                setTweakValue ("");
+//                setTweakValue ("");
                 //dibuat default
                 setResultPath (resultPath + "\\messages_in_" + fileName);
                 try {
