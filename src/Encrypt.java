@@ -17,6 +17,7 @@ public class Encrypt
         int value = 0;
         do {
             value = fis.read (bytes);
+            // fos.write(toHexString(bytes));
 
         } while (value != -1);
 
@@ -27,6 +28,7 @@ public class Encrypt
     public static void byteArrayToFile (byte[] bytes, String filepath)
             throws IOException
     {
+
         FileOutputStream fos = new FileOutputStream (filepath);
         fos.write (bytes);
         fos.flush ();
@@ -38,6 +40,7 @@ public class Encrypt
             String cipherPath)
     {
         try {
+
             // read file
             byte[] messages = Files.readAllBytes (Paths.get (filePath)); // per
                                                                          // byte
@@ -61,10 +64,7 @@ public class Encrypt
             String k1 = key.substring (0, (key.length () / 2));
             String k2 = key.substring (key.length () / 2, key.length ());
 
-            // Group the message to 2d array
-            // column (first dimension) is per block
-            // row (second dimension) is per byte in one block
-            // note: 1 block = 16 byte
+            // Create 2d array to group the message
             int messageIndex = 0;
             byte[][] blockMessage = new byte[blocksOfMessages][16];
             for (int i = 0; i < blocksOfMessages; i++) {
@@ -123,7 +123,7 @@ public class Encrypt
             int unusedLastBlockSpace)
     {
 
-        // int alpha = 135;
+        int alpha = 135;
         // 135 is modulus of Galois Field (2^128)
 
         // Make AES object to encrypt plain text with key 1
@@ -151,7 +151,7 @@ public class Encrypt
             for (int k = 0; k < 16; k++) {
                 if (k == 0) {
                     t[i + 1][k] = (byte) ((2 * (t[i][k] % 128))
-                            ^ (135 * (t[i][15] / 128)));
+                            ^ (alpha * (t[i][15] / 128)));
                 } else {
                     t[i + 1][k] = (byte) ((2 * (t[i][k] % 128))
                             ^ ((t[i][k - 1] / 128)));
@@ -159,7 +159,9 @@ public class Encrypt
             }
         }
 
-        
+        int lastOne = j - 1;
+        int lastTwo = j - 2;
+
         if (needStealing == false) {
             // 2. Calculate PP
             for (int i = 0; i < j; i++) { // i represent block number
@@ -180,21 +182,23 @@ public class Encrypt
                 }
             }
         } else if (needStealing == true && j > 2) {
-            // 2. Calculate PP for all blocks except two last blocks (index j-2 & j-1)
-            for (int i = 0; i < j - 2; i++) { // i represent block number
+            // 2. Calculate PP for all blocks except two last blocks (index j-2
+            // & j-1)
+            for (int i = 0; i < lastTwo; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
                     PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
                 }
             }
 
-            // 3. Calculate CC for all blocks except two last blocks (index j-2 & j-1)
-            for (int i = 0; i < j - 2; i++) { // i represents block number
+            // 3. Calculate CC for all blocks except two last blocks (index j-2
+            // & j-1)
+            for (int i = 0; i < lastTwo; i++) { // i represents block number
                 CC[i] = keyAES1.encrypt (PP[i]);
             }
 
             // 4. Calculate cipher text
-            // Calculate cipher text for all blocks except block index j-1
-            for (int i = 0; i < j - 1; i++) { // i represent block number
+            // Calculate cipher text for all blocks except the last block
+            for (int i = 0; i < lastOne; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
                     ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
                 }
@@ -202,7 +206,7 @@ public class Encrypt
 
             // ===Treatment for the last two blocks===
             // evaluate block index j-2
-            
+
             // PP
             for (int p = 0; p < 16; p++) {
                 int i = j - 2;
@@ -218,59 +222,59 @@ public class Encrypt
             }
 
             // evaluate last block (index j - 1)
-            // Append Last Block Plaintext with Ciphertext (size:
-            // unusedLastBlockSpace) block number j-2
+            // Append Last Block Plaintext with Ciphertext
 
-            int startByteID = 16 - unusedLastBlockSpace;
-            int endByteID = 16 - 1;
-            byte[] modifiedLastBlock = new byte[16];
-            // copy original last block to modifiedLastBlock
-            for (int byteID = 0; byteID <= 15; byteID++) {
-                modifiedLastBlock[byteID] = blockMessage[j - 1][byteID];
+            int startBlockSpace = 16 - unusedLastBlockSpace;
+            int endBlockSpace = 16 - 1;
+            byte[] lastBlock = new byte[16];
+            // copy original last block to modified last block
+            for (int index = 0; index <= 15; index++) {
+                lastBlock[index] = blockMessage[lastOne][index];
             }
 
-            for (int byteID = startByteID; byteID <= endByteID; byteID++) {
-                modifiedLastBlock[byteID] = ciphertextArray[j - 2][byteID];
+            // stealing from one block before
+            for (int index = startBlockSpace; index <= endBlockSpace; index++) {
+                lastBlock[index] = ciphertextArray[lastTwo][index];
             }
+
             // Calculate PP
             for (int p = 0; p < 16; p++) {
                 int i = j - 1;
 
-                PP[i][p] = (byte) (modifiedLastBlock[p] ^ t[i + 1][p]);
+                PP[i][p] = (byte) (lastBlock[p] ^ t[i + 1][p]);
 
             }
             // Calculate CC
-            CC[j - 1] = keyAES1.encrypt (PP[j - 1]);
+            CC[j - 1] = keyAES1.encrypt (PP[lastOne]);
 
             // Calculate ciphertext
             for (int p = 0; p < 16; p++) {
-                int i = j - 1;
+                int i = lastOne;
                 ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
             }
 
             // Swap j-1 ciphertext with cropped j-2 ciphertext
             byte[] lastCiphertextMaster = new byte[16];
-            for (int byteID = 0; byteID <= 15; byteID++) {
-                lastCiphertextMaster[byteID] = ciphertextArray[j - 1][byteID];
+            for (int byteIdx = 0; byteIdx <= 15; byteIdx++) {
+                lastCiphertextMaster[byteIdx] = ciphertextArray[lastOne][byteIdx];
             }
 
             // copy cropped block j-2 to last block
-            for (int byteID = 0; byteID <= 15; byteID++) {
+            for (int byteIdx = 0; byteIdx <= 15; byteIdx++) {
 
-                if (byteID < startByteID) {
-                    ciphertextArray[j - 1][byteID] = ciphertextArray[j
-                            - 2][byteID];
+                if (byteIdx < startBlockSpace) {
+                    ciphertextArray[lastOne][byteIdx] = ciphertextArray[lastTwo][byteIdx];
                 } else {
-                    ciphertextArray[j - 1][byteID] = (byte) 0;
+                    ciphertextArray[lastOne][byteIdx] = (byte) 0;
                 }
             }
-            // copy last block (original) to block j - 2
-            for (int byteID = 0; byteID <= 15; byteID++) {
-                ciphertextArray[j - 2][byteID] = lastCiphertextMaster[byteID];
+            // copy the original last block to the second last block
+            for (int byteIdx = 0; byteIdx <= 15; byteIdx++) {
+                ciphertextArray[lastTwo][byteIdx] = lastCiphertextMaster[byteIdx];
             }
         } else {
-            //????
-            System.out.println ("The number of block is less than 2");
+            // Jika blok kurang dari 2
+            System.out.println ("Jumlah block tidak lebih dari 1");
         }
 
         return ciphertextArray;
