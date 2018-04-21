@@ -113,7 +113,7 @@ public class Gui
             	
 //                setTweakValue ("");
                 //dibuat default
-                setResultPath (resultPath + "\\cipher_of_" + fileName);
+                setResultPath (resultPath + "cipher_of_" + fileName);
                 Encrypt.encryption (filePath, keyPath, tweakValue, resultPath);  
             }
         });
@@ -128,7 +128,7 @@ public class Gui
                 //belom dideclare
 //                setTweakValue ("");
                 //dibuat default
-                setResultPath (resultPath + "\\messages_in_" + fileName);
+                setResultPath (resultPath + "messages_in_" + fileName);
                 try {
 					Decrypt.decryption (filePath, keyPath, tweakValue, resultPath);
 				} catch (IOException e) {
@@ -230,9 +230,12 @@ public class Gui
              //display file name  
                 fileLocation.setText(fileChooser.getSelectedFile().getName());
              // return the file path
-                setFilePath (file.getAbsolutePath ());
+                setFilePath (file.getAbsolutePath());
                 //set default cipherpath
-                setResultPath (file.getAbsoluteFile ().getParent ());
+                setResultPath(file.getAbsoluteFile().getParent()+"/");
+//                System.out.println(file.getCanonicalPath());
+//                System.out.println(file.getCanonicalFile().getParent());
+                System.out.println(resultPath);
                 fileName = file.getName ();
             
               } catch (Exception ex) {

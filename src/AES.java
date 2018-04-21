@@ -407,9 +407,10 @@ class AES {
 	// check for bad arguments
         if (key == null)
             throw new IllegalArgumentException("Empty key");
-        if (!(key.length == 16 || key.length == 24 || key.length == 32))
-             throw new IllegalArgumentException("Incorrect key length");
-
+        if (!(key.length == 16 || key.length == 24 || key.length == 32)) {
+			System.out.println(key.length);
+			throw new IllegalArgumentException("Incorrect key length");
+		}
 	// set master number of rounds given size of this key
         numRounds = getRounds(Klen);
         final int ROUND_KEY_COUNT = (numRounds + 1) * BC;
