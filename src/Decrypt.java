@@ -19,7 +19,7 @@ public class Decrypt
         Path cipherPath = Paths.get(cipherFilePath);
         byte[] ciphers = Files.readAllBytes(cipherPath); // per byte
 
-        int blocksOfCiphers = ciphers.length /16;
+        int blocksOfCiphers = (ciphers.length / 16);
         boolean needStealing = false;
         int unusedLastBlockSpace = 0;
         if (ciphers.length % 16 != 0) {
@@ -28,9 +28,10 @@ public class Decrypt
             unusedLastBlockSpace = 16 - (ciphers.length % 16);
         }
 
-        // convert the cipher into 2d array
-        // column represents block
-        // row represents byte in one block
+        // Group the message to 2d array
+        // column (first dimension) is per block
+        // row (second dimension) is per byte in one block
+        // note: 1 block = 16 byte
         int cipherIndex = 0;
         byte[][] blockCipher = new byte[blocksOfCiphers][16];
         for (int i = 0; i < blocksOfCiphers; i++) {
@@ -101,7 +102,7 @@ public class Decrypt
             }
         }
 
-        // write message file
+        // write ciphertext file
         byteArrayToFile(message, messageFilePath);
 
         // Close files
@@ -145,6 +146,7 @@ public class Decrypt
             }
         }
 
+
         if (needStealing) {
             // jumlah block harus minimal 2
             if (blocksOfCiphers < 2) {
@@ -160,135 +162,129 @@ public class Decrypt
                     }
                 }
 
-            // 3. Create CC
-            // Calculate CC for all blocks except block index j-1
-            for (int i = 0; i < blocksOfCiphers - 2; i++) { // i represent block number
+                // 3. Create CC
+                // Calculate CC for all blocks except block index j-1
+                for (int i = 0; i < lastTwo; i++) { // i represent block number
                     cc[i] = key1AES.decrypt(pp[i]);
-            }
-
-            // 4. Calculate cipher text
-            // Calculate cipher text for all blocks except block index j-1
-            for (int i = 0; i < blocksOfCiphers - 1; i++) { // i represent block number
-                for (int p = 0; p < 16; p++) {
-                    plaintextArray[i][p] = (byte) (cc[i][p] ^ tweakXORAlpha[i + 1][p]);
                 }
-            }
 
-            byte[][] pt = new byte[blocksOfCiphers][16];
-            for (int i = 0; i < blocksOfCiphers - 1; i++) {
-                pt[i] = (byte) (cc[i] ^ tweakXORAlpha[i+1]);
-            }
+                // 4. Calculate cipher text
+                // Calculate cipher text for all blocks except block index j-1
+                for (int i = 0; i < lastTwo; i++) { // i represent block number
+                    for (int p = 0; p < 16; p++) {
+                        plaintextArray[i][p] = (byte) (cc[i][p] ^ tweakXORAlpha[i + 1][p]);
+                    }
+                }
 
-            // ==== Special treatment for block index j-2 & j-1 (last block)
-            // ====
-            // evaluate block index j-2
+                // ==== Special treatment for block index j-2 & j-1 (last block)
+                // ====
+                // evaluate block index j-2
 
-            // PP
-
-            int i = blocksOfCiphers - 2;
-            for (int p = 0; p < 16; p++) {
-                pp[i][p] = (byte) (blockCipher[i][p] ^ tweakXORAlpha[i + 2][p]); // menggunakan
-                // T
-                // ke
-                // m
-            }
-
-            int lastTwo = blocksOfCiphers - 2;
-            ppx[lastTwo] = (byte) (blockCipher[lastTwo] ^ tweakXORAlpha[lastTwo + 2])
-
-            // CC
-            cc[i] = key1AES.decrypt(pp[i]);
-
-            // ciphertext
-            for (int p = 0; p < 16; p++) {
-                plaintextArray[i][p] = (byte) (cc[i][p] ^ tweakXORAlpha[i + 2][p]); // menggunakan
-                // T
-                // ke
-                // m
-            }
-
-            pt[lastTwo] = (byte) (cc[lastTwo] ^ tweakXORAlpha[lastTwo + 2])
+                // PP
 
 
-            // evaluate block index j - 1
-            // Append Last Block Plaintext with Ciphertext (size:
-            // unusedLastBlockSpace) block number j-2
-            int startIndex = 16 - unusedLastBlockSpace;
-            byte[] modifiedLastBlock = new byte[16];
-            // copy original last block to modifiedLastBlock
-            for (int idx = 0; idx < startByteID; idx++) {
-                modifiedLastBlock[idx] = blockCipher[j - 1][idx];
-            }
+                for (int p = 0; p < 16; p++) {
+                    pp[lastTwo][p] = (byte) (blockCipher[lastTwo][p] ^ tweakXORAlpha[lastTwo + 2][p]); // menggunakan
+                    // T
+                    // ke
+                    // m
+                }
 
-            for (int idx = startByteID; idx < 16; byteID++) {
-                modifiedLastBlock[idx] = plaintextArray[j - 2][idx];
-            }
+                // CC
+                cc[lastTwo] = key1AES.decrypt(pp[lastTwo]);
 
-            int i = blocksOfCiphers - 1;
-            // Calculate PP
-            for (int p = 0; p < 16; p++) {
+                // ciphertext
+                for (int p = 0; p < 16; p++) {
+                    plaintextArray[lastTwo][p] = (byte) (cc[lastTwo][p] ^ tweakXORAlpha[lastTwo + 2][p]); // menggunakan
+                    // T
+                    // ke
+                    // m
+                }
 
+                // evaluate block index j - 1
+                // Append Last Block Plaintext with Ciphertext (size:
+                // unusedLastBlockSpace) block number j-2
+                int lastOne = blocksOfCiphers - 1;
+                int startIndex = 16 - unusedLastBlockSpace;
+                byte[] modifiedLastBlock = new byte[16];
+                // copy original last block to modifiedLastBlock
+                for (int idx = 0; idx < startIndex; idx++) {
+                    modifiedLastBlock[idx] = blockCipher[lastOne][idx];
+                }
 
+                for (int idx = startIndex; idx < 16; idx++) {
+                    modifiedLastBlock[idx] = plaintextArray[lastTwo][idx];
+                }
+
+                int i = blocksOfCiphers - 1;
+                // Calculate PP
+                for (int p = 0; p < 16; p++) {
                     pp[i][p] = (byte) (modifiedLastBlock[p] ^ tweakXORAlpha[i][p]); // menggunakan
                     // T
                     // ke
                     // m-1
-            }
+                }
 
-            int lastOne = blocksOfCiphers - 1;
-            ppx[lastOne] = (byte) (modifiedLastBlock ^ tweakXORAlpha[lastOne]);
-
-            // Calculate CC
+                // Calculate CC
                 cc[i] = key1AES.decrypt(pp[i]);
 
-            // Calculate ciphertext
-            for (int p = 0; p < 16; p++) {
-                int i = j - 1;
-
-                    plaintextArray[i][p] = (byte) (cc[i][p] ^ tweakXORAlpha[i][p]); // menggunakan
+                // Calculate ciphertext
+                for (int p = 0; p < 16; p++) {
+                    plaintextArray[lastOne][p] = (byte) (cc[i][p] ^ tweakXORAlpha[lastOne][p]); // menggunakan
                     // T
                     // ke
                     // m-1
-            }
+                }
 
-            pt[lastOne] = (byte) ^ tweakXORAlpha[lastOne];
+                // Swap j-1 ciphertext with cropped j-2 ciphertext
+                byte[] lastCiphertext = new byte[16];
+                for (int idx = 0; idx < 16; idx++) {
+                    lastCiphertext[idx] = plaintextArray[lastOne][idx];
+                }
+                // copy cropped block j-2 to last block
+                for (int idx = 0; idx < 16; idx++) {
 
-            // Swap j-1 ciphertext with cropped j-2 ciphertext
-            byte[] lastCiphertextMaster = new byte[16];
-            for (int byteID = 0; byteID <= 15; byteID++) {
-                lastCiphertextMaster[byteID] = ciphertextArray[j - 1][byteID];
-            }
-            // copy cropped block j-2 to last block
-            for (int byteID = 0; byteID <= 15; byteID++) {
-
-                if (byteID < startByteID) {
-                    ciphertextArray[j - 1][byteID] = ciphertextArray[j - 2][byteID];
-                } else {
-                    ciphertextArray[j - 1][byteID] = (byte) 0;
+                    if (idx < startIndex) {
+                        plaintextArray[lastOne][idx] = plaintextArray[lastTwo][idx];
+                    } else {
+                        plaintextArray[lastOne][idx] = (byte) 0;
+                    }
+                }
+                // copy last block (original) to block j - 2
+                for (int idx = 0; idx < 16; idx++) {
+                    plaintextArray[lastTwo][idx] = lastCiphertext[idx];
                 }
             }
-            // copy last block (original) to block j - 2
-            for (int byteID = 0; byteID <= 15; byteID++) {
-                ciphertextArray[j - 2][byteID] = lastCiphertextMaster[byteID];
+        } else {
+            // 2. Create PP
+            // jumlah block kurang dari 2
+            for (int i = 0; i < blocksOfCiphers; i++) { // i represent block number
+                for (int p = 0; p < 16; p++) {
+                    pp[i][p] = (byte) (blockCipher[i][p] ^ tweakXORAlpha[i + 1][p]);
+                }
             }
-        } else { // jumlah block kurang dari 2
-            System.out.println("Jumlah block tidak lebih dari 1");
+
+            // 3. Create CC
+            // Calculate CC for all blocks except block index j-1
+            for (int i = 0; i < blocksOfCiphers; i++) { // i represent block number
+                cc[i] = key1AES.decrypt(pp[i]);
+            }
+
+            // 4. Calculate cipher text
+            // Calculate cipher text for all blocks except block index j-1
+            for (int i = 0; i < blocksOfCiphers; i++) { // i represent block number
+                for (int p = 0; p < 16; p++) {
+                    plaintextArray[i][p] = (byte) (cc[i][p] ^ tweakXORAlpha[i + 1][p]);
+                }
+            }
         }
 
-        return ciphertextArray;
+        return plaintextArray;
     }
 
     public static void byteArrayToFile(byte[] bytes, String filepath) throws IOException {
-        // FileInputStream fis = new
-        // FileInputStream("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.jpg");
         FileOutputStream fos = new FileOutputStream(filepath);
-        // BufferedReader reader = new BufferedReader(new
-        // InputStreamReader(fis));
-        // String s;
-        // while((s = reader.readLine ()) != null) {
         fos.write(bytes);
-        // }
-        // reader.close ();
         fos.flush();
         fos.close();
     }
