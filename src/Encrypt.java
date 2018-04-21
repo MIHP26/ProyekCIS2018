@@ -124,7 +124,7 @@ public class Encrypt
             int unusedLastBlockSpace)
     {
 
-        // int alpha = 135;
+        int  alpha = 135;
         // 135 is modulus of Galois Field (2^128)
 
         // Make AES object to encrypt plain text with key 1
@@ -152,7 +152,7 @@ public class Encrypt
             for (int k = 0; k < 16; k++) {
                 if (k == 0) {
                     t[i + 1][k] = (byte) ((2 * (t[i][k] % 128))
-                            ^ (135 * (t[i][15] / 128)));
+                            ^ (alpha * (t[i][15] / 128)));
                 } else {
                     t[i + 1][k] = (byte) ((2 * (t[i][k] % 128))
                             ^ ((t[i][k - 1] / 128)));

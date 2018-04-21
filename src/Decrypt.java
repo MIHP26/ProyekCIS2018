@@ -32,8 +32,8 @@ public class Decrypt
         // column represents block
         // row represents byte in one block
         int cipherIndex = 0;
-        byte[][] blockCipher = new byte[j][16];
-        for (int i = 0; i < j; i++) {
+        byte[][] blockCipher = new byte[blocksOfCiphers][16];
+        for (int i = 0; i < blocksOfCiphers; i++) {
             for (int k = 0; k < 16; k++) {
                 if (cipherIndex < ciphers.length) {
                     blockCipher[i][k] = ciphers[cipherIndex];
@@ -101,7 +101,7 @@ public class Decrypt
             }
         }
 
-        // write ciphertext file
+        // write message file
         byteArrayToFile(message, messageFilePath);
 
         // Close files
@@ -134,7 +134,7 @@ public class Decrypt
         // Multiplication alpha^j + tweakEncrypted = T = mul
         // Calculate T FOR ALL BLOCKS
         byte[][] tweakXORAlpha = new byte[blocksOfCiphers + 1][16];
-        mul[0] = tweakEncrypted;
+        tweakXORAlpha[0] = tweakEncrypted;
         for (int i = 0; i < blocksOfCiphers; i++) {
             for (int k = 0; k < 16; k++) {
                 if (k == 0) {
@@ -146,7 +146,7 @@ public class Decrypt
         }
 
         // 2. Create PP
-        if (j > 2) { // jumlah block harus minimal 2
+        if (blocksOfCiphers > 2) { // jumlah block harus minimal 2
             // For all block except index j-2 and j-1 (last)
             // Calculate PP for all blocks except block index j-1
             for (int i = 0; i < blocksOfCiphers - 2; i++) { // i represent block number
@@ -163,7 +163,7 @@ public class Decrypt
             // 3. Create CC
             // Calculate CC for all blocks except block index j-1
             for (int i = 0; i < blocksOfCiphers - 2; i++) { // i represent block number
-                    cc[i] = key1AES.decrypt(PP[i]);
+                    cc[i] = key1AES.decrypt(pp[i]);
             }
 
             // 4. Calculate cipher text
@@ -278,7 +278,7 @@ public class Decrypt
         return ciphertextArray;
     }
 
-    public void byteArrayToFile(byte[] bytes, String filepath) throws IOException {
+    public static void byteArrayToFile(byte[] bytes, String filepath) throws IOException {
         // FileInputStream fis = new
         // FileInputStream("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.jpg");
         FileOutputStream fos = new FileOutputStream(filepath);
