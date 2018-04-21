@@ -55,10 +55,10 @@ public class Decrypt
         byte[] key1arr = DatatypeConverter.parseHexBinary(keyHex1);
         byte[] key2arr = DatatypeConverter.parseHexBinary(keyHex2);
 
-        // Mengubah kunci menjadi array of byte
+        // Mengubah tweak value menjadi array of byte
         byte[] tweakArr = tweakI.getBytes();
 
-        // Membalik kunci
+        // Membalik tweakvalue
         byte[] reversedTweakArr = new byte[tweakArr.length];
         for (int i = 0; i < tweakArr.length; i++) {
             reversedTweakArr[tweakArr.length - (i+1)] = tweakArr[i];
@@ -88,6 +88,7 @@ public class Decrypt
     public static byte[][] xtsAES(byte[][] blockCipher, int blocksOfCiphers, byte[] key1arr, byte[] key2arr,
                                   byte[] reversedTweakArr, boolean needStealing, int unusedLastBlockSpace) {
         // Alpha
+        // 135 adalah sisa modulus GF(2^128)
         int alpha = 135;
 
         // Buat objek AES dengan kunci 1
@@ -160,7 +161,7 @@ public class Decrypt
                     plaintextArray[lastTwo][p] = (byte) (cc[lastTwo][p] ^ tweakXORAlpha[lastTwo + 2][p]);
                 }
 
-                // Kalkulasi block terakhir
+                // Stealing block terakhir
                 int lastOne = blocksOfCiphers - 1;
                 int startIndex = 16 - unusedLastBlockSpace;
                 byte[] modifiedLastBlock = new byte[16];
@@ -177,10 +178,10 @@ public class Decrypt
                     pp[lastOne][p] = (byte) (modifiedLastBlock[p] ^ tweakXORAlpha[lastOne][p]); // menggunakan
                 }
 
-                // Kalkulasi c untuk block terakhir
+                // Kalkulasi cc untuk block terakhir
                 cc[i] = key1AES.decrypt(pp[i]);
 
-                // Kalkulasi c untuk block terakhir
+                // Kalkulasi plaintext untuk block terakhir
                 for (int p = 0; p < 16; p++) {
                     plaintextArray[lastOne][p] = (byte) (cc[lastOne][p] ^ tweakXORAlpha[lastOne][p]);
                 }

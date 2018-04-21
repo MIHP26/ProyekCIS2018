@@ -9,7 +9,8 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Encrypt
 {
-    public static void byteArrayToFile (byte[] bytes, String filepath)
+    // Fungsi untuk menulikan array of byte ke dalam file
+    public static void byteArrayToFile(byte[] bytes, String filepath)
             throws IOException {
         FileOutputStream fos = new FileOutputStream (filepath);
         fos.write (bytes);
@@ -17,19 +18,17 @@ public class Encrypt
         fos.close ();
     }
 
-    public static void encryption (String filePath, String keyPath, String tweakValue,
-            String cipherPath)
-    {
+    public static void encryption(String filePath, String keyPath, String tweakValue,
+            String cipherPath) {
         try {
+            // Membaca file menjadi array yang terdiri dari byte
+            byte[] messages = Files.readAllBytes(Paths.get(filePath));
 
-            // read file
-            byte[] messages = Files.readAllBytes (Paths.get (filePath)); // per
-                                                                         // byte
-
-            // divide message into blocks
+            // Menghitung jumlah block dengan membagi panjang array dengan 16
+            // Menentukan perlunya stealing atau tidak
+            // Menentukan sisa blok yang kosong pada block terakhir
             int blocksOfMessages = messages.length / 16;
             boolean needStealing = false;
-
             int unusedLastBlockSpace = 0;
             if (messages.length % 16 != 0) {
                 blocksOfMessages = (messages.length / 16) + 1;
@@ -37,15 +36,17 @@ public class Encrypt
                 unusedLastBlockSpace = 16 - (messages.length % 16);
             }
 
-            // key processing
-            FileInputStream fis = new FileInputStream (keyPath);
-            BufferedReader reader = new BufferedReader (
-                    new InputStreamReader (fis));
-            String key = reader.readLine ();
-            String k1 = key.substring (0, (key.length () / 2));
-            String k2 = key.substring (key.length () / 2, key.length ());
+            // Membaca kunci
+            FileInputStream fis = new FileInputStream(keyPath);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(fis));
+            String key = reader.readLine();
 
-            // Create 2d array to group the message
+            // Membagi kunci menjadi 2 yang sama panjang
+            String k1 = key.substring (0, (key.length() / 2));
+            String k2 = key.substring (key.length() / 2, key.length());
+
+            // Mengelompokkan array menjadi block yang masing-masing terdiri dari 16 blok
             int messageIndex = 0;
             byte[][] blockMessage = new byte[blocksOfMessages][16];
             for (int i = 0; i < blocksOfMessages; i++) {
@@ -57,19 +58,20 @@ public class Encrypt
                 }
             }
 
+            // Mengubah kunci menjadi array of byte
             byte[] key1arr = DatatypeConverter.parseHexBinary (k1);
             byte[] key2arr = DatatypeConverter.parseHexBinary (k2);
 
-            // Tweak
+            // Mengubah tweak value menjadi array of byte
             byte[] tweakArr = tweakValue.getBytes ();
-            byte[] reversedTweakArr = new byte[tweakArr.length];
 
-            // Make it little-endian
+            // Membalik tweakvalue
+            byte[] reversedTweakArr = new byte[tweakArr.length];
             for (int idx = 0; idx < tweakArr.length; idx++) {
                 reversedTweakArr[tweakArr.length - (idx + 1)] = tweakArr[idx];
             }
 
-            // Encrypt
+            // Melakukan Enkripsi
             byte[][] ciphertextArray = xtsAES (blockMessage, blocksOfMessages,
                     key1arr, key2arr, reversedTweakArr, needStealing,
                     unusedLastBlockSpace);
@@ -85,12 +87,9 @@ public class Encrypt
                 }
             }
 
-            // write ciphertext file
-            byteArrayToFile (cipher, cipherPath);
-
-            // Close files
-            reader.close ();
-
+            // Mengubah kembali block menjadi array of byte
+            byteArrayToFile(cipher, cipherPath);
+            reader.close();
         }
 
         catch (Exception e) {
@@ -103,29 +102,27 @@ public class Encrypt
             byte[] key2arr, byte[] LittleEndianTweak, boolean needStealing,
             int unusedLastBlockSpace)
     {
-
+        // Alpha
+        // 135 adalah sisa modulus GF(2^128)
         int alpha = 135;
-        // 135 is modulus of Galois Field (2^128)
 
-        // Make AES object to encrypt plain text with key 1
+        // Buat objek AES dengan kunci 1
         AES keyAES1 = new AES ();
         keyAES1.setKey(key1arr);
 
-        // Make AES object to encrypt tweak with key 2
+        // Buat objek AES dengan kunci 1
         AES keyAES2 = new AES ();
         keyAES2.setKey(key2arr);
 
-        // Initialize
+        // inisialisasi pp, cc dan ciphertext
         byte[][] ciphertextArray = new byte[j][16];
         byte[][] PP = new byte[j][16];
         byte[][] CC = new byte[j][16];
 
-        // 1. Calculate T
-        // First, encrypt Key2 + i with AES Encrypt
+        // Enkripsi tweak value awal dengan kunci 2
         byte[] encryptedTweak = keyAES2.encrypt (LittleEndianTweak);
 
-        // T = Multiplication alpha^j and encrypted tweak
-        // Calculate T for each blocks
+        // Membuat  tweak value tiap block dengan tweak value awal
         byte[][] t = new byte[j + 1][16];
         t[0] = encryptedTweak;
         for (int i = 0; i < j; i++) {
@@ -140,116 +137,101 @@ public class Encrypt
             }
         }
 
-        int lastOne = j - 1;
-        int lastTwo = j - 2;
-
         if (needStealing == false) {
-            // 2. Calculate PP
+            // Isi pp dengan hasil bitwise xor plaintext dengan tweak value
             for (int i = 0; i < j; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
                     PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
                 }
             }
 
-            // 3. Calculate CC for all blocks
+            // Isi cc dengan hasil dekripsi pp menggunakan kunci 1
             for (int i = 0; i < j; i++) { // i represents block number
                 CC[i] = keyAES1.encrypt (PP[i]);
             }
 
-            // 4. Calculate cipher text
+            // Isi ciphertext dengan hasil bitwise xor cc dengan tweak value
             for (int i = 0; i < j; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
                     ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
                 }
             }
         } else if (needStealing == true && j >= 2) {
-            // 2. Calculate PP for all blocks except two last blocks (index j-2
-            // & j-1)
-            for (int i = 0; i < lastTwo; i++) { // i represent block number
+            int lastOne = j - 1;
+            int lastTwo = j - 2;
+
+            // Isi pp dengan hasil bitwise xor cipher dengan tweak value
+            // kecuali 2 block terakhir
+            for (int i = 0; i < lastTwo; i++) {
                 for (int p = 0; p < 16; p++) {
                     PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
                 }
             }
 
-            // 3. Calculate CC for all blocks except two last blocks (index j-2
-            // & j-1)
-            for (int i = 0; i < lastTwo; i++) { // i represents block number
+            // Isi cc dengan hasil dekripsi pp menggunakan kunci 1
+            // kecuali 2 block terakhir
+            for (int i = 0; i < lastTwo; i++) {
                 CC[i] = keyAES1.encrypt (PP[i]);
             }
 
-            // 4. Calculate cipher text
-            // Calculate cipher text for all blocks except the last block
-            for (int i = 0; i < lastTwo; i++) { // i represent block number
+            // Isi plaintext dengan hasil bitwise xor cc dengan tweak value
+            // kecuali 2 block terakhir
+            for (int i = 0; i < lastTwo; i++) {
                 for (int p = 0; p < 16; p++) {
                     ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
                 }
             }
 
-            // ===Treatment for the last two blocks===
-            // evaluate block index j-2
-
-            // PP
+            // Kalkulasi pp untuk block yang sebelum block terakhir menggunakan tweak value block terakhir
             for (int p = 0; p < 16; p++) {
-                int i = j - 2;
-                PP[i][p] = (byte) (blockMessage[i][p] ^ t[i + 1][p]);
-            }
-            // CC
-            CC[j - 2] = keyAES1.encrypt (PP[j - 2]);
-
-            // ciphertext
-            for (int p = 0; p < 16; p++) {
-                int i = j - 2;
-                ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
+                PP[lastTwo][p] = (byte) (blockMessage[lastTwo][p] ^ t[lastTwo + 1][p]);
             }
 
-            // evaluate last block (index j - 1)
-            // Append Last Block Plaintext with Ciphertext
+            // Kalkulasi cc untuk block yang sebelum block terakhir
+            CC[lastTwo] = keyAES1.encrypt (PP[lastTwo]);
 
+            // Kalkulasi ciphertext untuk block yang sebelum block terakhir
+            for (int p = 0; p < 16; p++) {
+                ciphertextArray[lastTwo][p] = (byte) (CC[lastTwo][p] ^ t[lastTwo + 1][p]);
+            }
+
+            // Stealing block terakhir
             int startBlockSpace = 16 - unusedLastBlockSpace;
-            int endBlockSpace = 16 - 1;
             byte[] lastBlock = new byte[16];
-            // copy original last block to modified last block
-            for (int index = 0; index <= 15; index++) {
+            // Isi blok kosong pada block terakhir dengan plaintext dari block sebelum terakhir
+            for (int index = 0; index < startBlockSpace; index++) {
                 lastBlock[index] = blockMessage[lastOne][index];
             }
-
-            // stealing from one block before
-            for (int index = startBlockSpace; index <= endBlockSpace; index++) {
+            for (int index = startBlockSpace; index < 16; index++) {
                 lastBlock[index] = ciphertextArray[lastTwo][index];
             }
 
-            // Calculate PP
+            // Kalkulasi pp untuk block terakhir menggunakan tweak value sebelum block terakhir
             for (int p = 0; p < 16; p++) {
-                int i = j - 1;
-
-                PP[i][p] = (byte) (lastBlock[p] ^ t[i + 1][p]);
+                PP[lastOne][p] = (byte) (lastBlock[p] ^ t[lastOne + 1][p]);
 
             }
-            // Calculate CC
-            CC[j - 1] = keyAES1.encrypt (PP[lastOne]);
 
-            // Calculate ciphertext
+            // Kalkulasi cc untuk block terakhir
+            CC[lastOne] = keyAES1.encrypt (PP[lastOne]);
+
+            // Kalkulasi plaintext untuk block terakhir
             for (int p = 0; p < 16; p++) {
-                int i = lastOne;
-                ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
+                ciphertextArray[lastOne][p] = (byte) (CC[lastOne][p] ^ t[lastOne + 1][p]);
             }
 
-            // Swap j-1 ciphertext with cropped j-2 ciphertext
+            // tukar ciphertext dari block terakhir dengan block sebelum terakhir
             byte[] lastCiphertextMaster = new byte[16];
             for (int byteIdx = 0; byteIdx <= 15; byteIdx++) {
                 lastCiphertextMaster[byteIdx] = ciphertextArray[lastOne][byteIdx];
             }
-
-            // copy cropped block j-2 to last block
             for (int byteIdx = 0; byteIdx <= 15; byteIdx++) {
-
                 if (byteIdx < startBlockSpace) {
                     ciphertextArray[lastOne][byteIdx] = ciphertextArray[lastTwo][byteIdx];
                 } else {
                     ciphertextArray[lastOne][byteIdx] = (byte) 0;
                 }
             }
-            // copy the original last block to the second last block
             for (int byteIdx = 0; byteIdx <= 15; byteIdx++) {
                 ciphertextArray[lastTwo][byteIdx] = lastCiphertextMaster[byteIdx];
             }
@@ -257,8 +239,7 @@ public class Encrypt
             // Jika blok kurang dari 2
             System.out.println ("Jumlah block tidak lebih dari 1");
         }
-        System.out.println("yay");
+        //System.out.println("yay");
         return ciphertextArray;
     }
-
 }
