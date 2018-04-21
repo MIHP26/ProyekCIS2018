@@ -10,15 +10,13 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Encrypt
 {
-
-    public byte[] messageToByteArray (String filepath) throws IOException
+    public static byte[] messageToByteArray (String filepath) throws IOException
     {
         FileInputStream fis = new FileInputStream (filepath);
         byte[] bytes = new byte[800];
         int value = 0;
         do {
             value = fis.read (bytes);
-            // fos.write(toHexString(bytes));
 
         } while (value != -1);
 
@@ -26,10 +24,9 @@ public class Encrypt
     }
 
 
-    public void byteArrayToFile (byte[] bytes, String filepath)
+    public static void byteArrayToFile (byte[] bytes, String filepath)
             throws IOException
     {
-
         FileOutputStream fos = new FileOutputStream (filepath);
         fos.write (bytes);
         fos.flush ();
@@ -37,11 +34,10 @@ public class Encrypt
     }
 
 
-    public void encryption (String filePath, String keyPath, String tweakValue,
+    public static void encryption (String filePath, String keyPath, String tweakValue,
             String cipherPath)
     {
         try {
-
             // read file
             byte[] messages = Files.readAllBytes (Paths.get (filePath)); // per
                                                                          // byte
@@ -65,7 +61,10 @@ public class Encrypt
             String k1 = key.substring (0, (key.length () / 2));
             String k2 = key.substring (key.length () / 2, key.length ());
 
-            // Create 2d array to group the message
+            // Group the message to 2d array
+            // column (first dimension) is per block
+            // row (second dimension) is per byte in one block
+            // note: 1 block = 16 byte
             int messageIndex = 0;
             byte[][] blockMessage = new byte[blocksOfMessages][16];
             for (int i = 0; i < blocksOfMessages; i++) {

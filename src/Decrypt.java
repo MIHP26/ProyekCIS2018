@@ -13,100 +13,105 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Decrypt
 {
-    public static void decrypt(String cipherFilePath, String keyFilePath, String tweakI, String messageFilePath)
+    public static void decryption(String cipherFilePath, String keyFilePath, String tweakI, String messageFilePath)
             throws IOException {
-        // Read file and convert to array of byte
-        Path cipherPath = Paths.get(cipherFilePath);
-        byte[] ciphers = Files.readAllBytes(cipherPath); // per byte
-
-        int blocksOfCiphers = (ciphers.length / 16);
-        boolean needStealing = false;
-        int unusedLastBlockSpace = 0;
-        if (message.length % 16 != 0) {
-            blocksOfCiphers = (ciphers.length / 16) + 1;
-            needStealing = true;
-            unusedLastBlockSpace = 16 - (ciphers.length % 16);
-        }
-
-        // Group the message to 2d array
-        // column (first dimension) is per block
-        // row (second dimension) is per byte in one block
-        // note: 1 block = 16 byte
-        int cipherIndex = 0;
-        byte[][] blockCipher = new byte[blocksOfCiphers][16];
-        for (int i = 0; i < blocksOfCiphers; i++) {
-            for (int k = 0; k < 16; k++) {
-                if (cipherIndex < ciphers.length) {
-                    blockCipher[i][k] = ciphers[cipherIndex];
-                    cipherIndex++;
-                }
-            }
-        }
-
-        // Read key
-        BufferedReader inputKey = new BufferedReader(new FileReader(new File(keyFilePath)));
-        // Key still in HEX
-        String keyStr = inputKey.readLine();
-//        int keyLength = keyStr.length();
-        String keyHex1 = keyStr.substring(0, keyStr.length() / 2);
-        String keyHex2 = keyStr.substring(keyStr.length() / 2, keyStr.length());
-
-        // Convert each key to its char/ascii
-//        int a = 0;
-//        String key1 = "";
-//        while (a < keyHex1.length()) {
-//            String temp = keyHex1.substring(a, a + 2);
-//            int hex = Integer.parseInt(temp, 16);
-//            key1 += (char) hex;
-//            a = a + 2;
-//        }
-//        byte[] key1arr = key1.getBytes();
-        byte[] key1arr = DatatypeConverter.parseHexBinary(keyHex1);
-
-//        a = 0;
-//        String key2 = "";
-//        while (a < keyHex2.length()) {
-//            String temp = keyHex2.substring(a, a + 2);
-//            int hex = Integer.parseInt(temp, 16);
-//            key2 += (char) hex;
-//            a = a + 2;
-//        }
-//        byte[] key2arr = key2.getBytes();
-        byte[] key2arr = DatatypeConverter.parseHexBinary(keyHex2);
-
-        // Tweak
-        byte[] tweakArr = tweakI.getBytes();
-        byte[] reversedTweakArr = new byte[tweakArr.length];
-        // Make it little-endian
-        for (int i = 0; i < tweakArr.length; i++) {
-            reversedTweakArr[tweakArr.length - (i+1)] = tweakArr[i];
-        }
-
-        // Decrypt
-        byte[][] plaintextArray = xtsAES(blockCipher, blocksOfCiphers, key1arr, key2arr, reversedTweakArr,
-                needStealing, unusedLastBlockSpace);
-
-//        printTwo2DByte(blockMessage, decryptedArray);
-
-        // write decrypted file
-//        writeByteArrayToFile(decryptedArray, decryptedFilename, message.length);
-
-        byte[] message = new byte[ciphers.length];
-        int messageIndex = 0;
-        for (int x = 0; x < plaintextArray.length; x++) {
-            for (int y = 0; y < plaintextArray[x].length; y++) {
-                if (messageIndex < ciphers.length) {
-                    message[messageIndex] = (plaintextArray[x][y]);
-                    messageIndex++;
-                }
-            }
-        }
-
-        // write ciphertext file
-        byteArrayToFile(message, messageFilePath);
-
-        // Close files
-        inputKey.close();
+       try {
+    	   // Read file and convert to array of byte
+	        Path cipherPath = Paths.get(cipherFilePath);
+	        byte[] ciphers = Files.readAllBytes(cipherPath); // per byte
+	
+	        int blocksOfCiphers = (ciphers.length / 16);
+	        boolean needStealing = false;
+	        int unusedLastBlockSpace = 0;
+	        if (ciphers.length % 16 != 0) {
+	            blocksOfCiphers = (ciphers.length / 16) + 1;
+	            needStealing = true;
+	            unusedLastBlockSpace = 16 - (ciphers.length % 16);
+	        }
+	
+	        // Group the message to 2d array
+	        // column (first dimension) is per block
+	        // row (second dimension) is per byte in one block
+	        // note: 1 block = 16 byte
+	        int cipherIndex = 0;
+	        byte[][] blockCipher = new byte[blocksOfCiphers][16];
+	        for (int i = 0; i < blocksOfCiphers; i++) {
+	            for (int k = 0; k < 16; k++) {
+	                if (cipherIndex < ciphers.length) {
+	                    blockCipher[i][k] = ciphers[cipherIndex];
+	                    cipherIndex++;
+	                }
+	            }
+	        }
+	
+	        // Read key
+	        BufferedReader inputKey = new BufferedReader(new FileReader(new File(keyFilePath)));
+	        // Key still in HEX
+	        String keyStr = inputKey.readLine();
+	//        int keyLength = keyStr.length();
+	        String keyHex1 = keyStr.substring(0, keyStr.length() / 2);
+	        String keyHex2 = keyStr.substring(keyStr.length() / 2, keyStr.length());
+	
+	        // Convert each key to its char/ascii
+	//        int a = 0;
+	//        String key1 = "";
+	//        while (a < keyHex1.length()) {
+	//            String temp = keyHex1.substring(a, a + 2);
+	//            int hex = Integer.parseInt(temp, 16);
+	//            key1 += (char) hex;
+	//            a = a + 2;
+	//        }
+	//        byte[] key1arr = key1.getBytes();
+	        byte[] key1arr = DatatypeConverter.parseHexBinary(keyHex1);
+	
+	//        a = 0;
+	//        String key2 = "";
+	//        while (a < keyHex2.length()) {
+	//            String temp = keyHex2.substring(a, a + 2);
+	//            int hex = Integer.parseInt(temp, 16);
+	//            key2 += (char) hex;
+	//            a = a + 2;
+	//        }
+	//        byte[] key2arr = key2.getBytes();
+	        byte[] key2arr = DatatypeConverter.parseHexBinary(keyHex2);
+	
+	        // Tweak
+	        byte[] tweakArr = tweakI.getBytes();
+	        byte[] reversedTweakArr = new byte[tweakArr.length];
+	        // Make it little-endian
+	        for (int i = 0; i < tweakArr.length; i++) {
+	            reversedTweakArr[tweakArr.length - (i+1)] = tweakArr[i];
+	        }
+	
+	        // Decrypt
+	        byte[][] plaintextArray = xtsAES(blockCipher, blocksOfCiphers, key1arr, key2arr, reversedTweakArr,
+	                needStealing, unusedLastBlockSpace);
+	
+	//        printTwo2DByte(blockMessage, decryptedArray);
+	
+	        // write decrypted file
+	//        writeByteArrayToFile(decryptedArray, decryptedFilename, message.length);
+	
+	        byte[] message = new byte[ciphers.length];
+	        int messageIndex = 0;
+	        for (int x = 0; x < plaintextArray.length; x++) {
+	            for (int y = 0; y < plaintextArray[x].length; y++) {
+	                if (messageIndex < ciphers.length) {
+	                    message[messageIndex] = (plaintextArray[x][y]);
+	                    messageIndex++;
+	                }
+	            }
+	        }
+	
+	        // write ciphertext file
+	        byteArrayToFile(message, messageFilePath);
+	
+	        // Close files
+	        inputKey.close();
+       }
+       catch (Exception e) {
+           e.printStackTrace ();
+       }
     }
 
     public static byte[][] xtsAES(byte[][] blockCipher, int blocksOfCiphers, byte[] key1arr, byte[] key2arr,
@@ -283,16 +288,8 @@ public class Decrypt
     }
 
     public static void byteArrayToFile(byte[] bytes, String filepath) throws IOException {
-        // FileInputStream fis = new
-        // FileInputStream("C:\\Users\\Tazkianida\\workspace\\TesCIS\\src\\gambar1.jpg");
         FileOutputStream fos = new FileOutputStream(filepath);
-        // BufferedReader reader = new BufferedReader(new
-        // InputStreamReader(fis));
-        // String s;
-        // while((s = reader.readLine ()) != null) {
         fos.write(bytes);
-        // }
-        // reader.close ();
         fos.flush();
         fos.close();
     }

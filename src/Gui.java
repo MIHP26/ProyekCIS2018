@@ -67,7 +67,7 @@ public class Gui
     private void initialize ()
     {
         frame = new JFrame ("AES-Encryption and Decryption");
-        frame.setBounds (100, 100, 450, 300);
+        frame.setBounds (100, 100, 450, 213);
         frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
         
         JLabel lblEncryptionAndDecryption = new JLabel("Encryption and Decryption");
@@ -109,12 +109,11 @@ public class Gui
             public void actionPerformed (ActionEvent arg0)
             {
                 // TODO Auto-generated method stub
-                Encrypt encryptFile = new Encrypt ();
                 //belom dideclare
                 setTweakValue ("");
                 //dibuat default
                 setResultPath (resultPath + "\\cipher_of_" + fileName);
-                encryptFile.encryption (filePath, keyPath, tweakValue, resultPath);  
+                Encrypt.encryption (filePath, keyPath, tweakValue, resultPath);  
             }
         });
         
@@ -125,12 +124,15 @@ public class Gui
             public void actionPerformed (ActionEvent arg0)
             {
                 // TODO Auto-generated method stub
-                Encrypt encryptFile = new Encrypt ();
                 //belom dideclare
                 setTweakValue ("");
                 //dibuat default
                 setResultPath (resultPath + "\\messages_in_" + fileName);
-                encryptFile.encryption (filePath, keyPath, tweakValue, resultPath);  
+                try {
+					Decrypt.decryption (filePath, keyPath, tweakValue, resultPath);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}  
             }
         });
         
@@ -143,57 +145,54 @@ public class Gui
        
         GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
         groupLayout.setHorizontalGroup(
-            groupLayout.createParallelGroup(Alignment.LEADING)
-                .addGroup(groupLayout.createSequentialGroup()
-                    .addGap(144)
-                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addGroup(groupLayout.createSequentialGroup()
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(btnEncrypt)
-                            .addPreferredGap(ComponentPlacement.UNRELATED)
-                            .addComponent(btnDecrypt))
-                        .addGroup(groupLayout.createSequentialGroup()
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(lblEncryptionAndDecryption, GroupLayout.PREFERRED_SIZE, 147, GroupLayout.PREFERRED_SIZE))
-                        .addGroup(groupLayout.createSequentialGroup()
-                            .addGap(5)
-                            .addComponent(lblXtsaesMode)))
-                    .addContainerGap(140, Short.MAX_VALUE))
-                .addGroup(groupLayout.createSequentialGroup()
-                    .addGap(178)
-                    .addComponent(btnOpenKey)
-                    .addContainerGap(177, Short.MAX_VALUE))
-                .addGroup(groupLayout.createSequentialGroup()
-                    .addContainerGap(114, Short.MAX_VALUE)
-                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(fileLocation, GroupLayout.PREFERRED_SIZE, 210, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(keyLocation, GroupLayout.PREFERRED_SIZE, 210, GroupLayout.PREFERRED_SIZE))
-                    .addGap(110))
-                .addGroup(groupLayout.createSequentialGroup()
-                    .addGap(179)
-                    .addComponent(btnOpenFile)
-                    .addContainerGap(178, Short.MAX_VALUE))
+        	groupLayout.createParallelGroup(Alignment.LEADING)
+        		.addGroup(groupLayout.createSequentialGroup()
+        			.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+        				.addGroup(groupLayout.createSequentialGroup()
+        					.addGap(144)
+        					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+        						.addGroup(groupLayout.createSequentialGroup()
+        							.addPreferredGap(ComponentPlacement.RELATED)
+        							.addComponent(lblEncryptionAndDecryption, GroupLayout.PREFERRED_SIZE, 147, GroupLayout.PREFERRED_SIZE))
+        						.addGroup(groupLayout.createSequentialGroup()
+        							.addGap(5)
+        							.addComponent(lblXtsaesMode))))
+        				.addGroup(groupLayout.createSequentialGroup()
+        					.addGap(66)
+        					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+        						.addComponent(keyLocation, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
+        						.addComponent(fileLocation, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE))
+        					.addPreferredGap(ComponentPlacement.RELATED)
+        					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+        						.addComponent(btnOpenFile)
+        						.addComponent(btnOpenKey)))
+        				.addGroup(groupLayout.createSequentialGroup()
+        					.addGap(131)
+        					.addComponent(btnEncrypt)
+        					.addPreferredGap(ComponentPlacement.RELATED)
+        					.addComponent(btnDecrypt)))
+        			.addContainerGap(86, Short.MAX_VALUE))
         );
         groupLayout.setVerticalGroup(
-            groupLayout.createParallelGroup(Alignment.LEADING)
-                .addGroup(groupLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(lblEncryptionAndDecryption)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(lblXtsaesMode)
-                    .addPreferredGap(ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
-                    .addComponent(fileLocation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(btnOpenFile)
-                    .addGap(18)
-                    .addComponent(keyLocation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(btnOpenKey)
-                    .addGap(24)
-                    .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(btnEncrypt)
-                        .addComponent(btnDecrypt))
-                    .addGap(22))
+        	groupLayout.createParallelGroup(Alignment.LEADING)
+        		.addGroup(groupLayout.createSequentialGroup()
+        			.addContainerGap()
+        			.addComponent(lblEncryptionAndDecryption)
+        			.addPreferredGap(ComponentPlacement.RELATED)
+        			.addComponent(lblXtsaesMode)
+        			.addGap(18)
+        			.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+        				.addComponent(fileLocation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+        				.addComponent(btnOpenFile))
+        			.addPreferredGap(ComponentPlacement.RELATED)
+        			.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+        				.addComponent(keyLocation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+        				.addComponent(btnOpenKey))
+        			.addPreferredGap(ComponentPlacement.UNRELATED)
+        			.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+        				.addComponent(btnDecrypt)
+        				.addComponent(btnEncrypt))
+        			.addContainerGap(190, Short.MAX_VALUE))
         );
         frame.getContentPane().setLayout(groupLayout);
 

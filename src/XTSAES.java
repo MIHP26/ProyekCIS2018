@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 import javax.xml.bind.DatatypeConverter;
 
 public class XTSAES {
+	
+	// HARUS DIUBAH
 	public static final int ENCRYPT = 0;
 	public static final int DECRYPT = 1;
 
