@@ -2,7 +2,6 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JFileChooser;
-import java.awt.BorderLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Font;
@@ -125,8 +124,6 @@ public class Gui
             public void actionPerformed (ActionEvent arg0)
             {
                 // TODO Auto-generated method stub
-                //belom dideclare
-//                setTweakValue ("");
                 //dibuat default
                 setResultPath (resultPath + "messages_in_" + fileName);
                 try {
@@ -261,11 +258,5 @@ public class Gui
     public void setResultPath (String resultPath)
     {
         this.resultPath = resultPath;
-    }
-   
-
-    public void setTweakValue (String tweakValue)
-    {
-        this. tweakValue =  tweakValue;
     }
 }

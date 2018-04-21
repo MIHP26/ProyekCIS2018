@@ -10,21 +10,6 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Encrypt
 {
-    public static byte[] messageToByteArray (String filepath) throws IOException
-    {
-        FileInputStream fis = new FileInputStream (filepath);
-        byte[] bytes = new byte[800];
-        int value = 0;
-        do {
-            value = fis.read (bytes);
-            // fos.write(toHexString(bytes));
-
-        } while (value != -1);
-
-        return bytes;
-    }
-
-
     public static void byteArrayToFile (byte[] bytes, String filepath)
             throws IOException {
         FileOutputStream fos = new FileOutputStream (filepath);
