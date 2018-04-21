@@ -128,11 +128,11 @@ public class Encrypt
 
         // Make AES object to encrypt plain text with key 1
         AES keyAES1 = new AES ();
-        keyAES1.setKey (key1arr);
+        keyAES1.setKey(key1arr);
 
         // Make AES object to encrypt tweak with key 2
         AES keyAES2 = new AES ();
-        keyAES2.setKey (key2arr);
+        keyAES2.setKey(key2arr);
 
         // Initialize
         byte[][] ciphertextArray = new byte[j][16];
