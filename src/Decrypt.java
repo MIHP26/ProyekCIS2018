@@ -179,7 +179,7 @@ public class Decrypt
                 }
 
                 // Kalkulasi cc untuk block terakhir
-                cc[i] = key1AES.decrypt(pp[i]);
+                cc[lastOne] = key1AES.decrypt(pp[lastOne]);
 
                 // Kalkulasi plaintext untuk block terakhir
                 for (int p = 0; p < 16; p++) {

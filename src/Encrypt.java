@@ -239,7 +239,6 @@ public class Encrypt
             // Jika blok kurang dari 2
             System.out.println ("Jumlah block tidak lebih dari 1");
         }
-        //System.out.println("yay");
         return ciphertextArray;
     }
 }
