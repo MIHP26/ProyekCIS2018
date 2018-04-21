@@ -194,7 +194,7 @@ public class Encrypt
             }
 
             // 4. Calculate cipher text
-            // Calculate cipher text for all blocks except block index j-1
+            // Calculate cipher text for all blocks except the last block
             for (int i = 0; i < j - 1; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
                     ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
@@ -219,25 +219,26 @@ public class Encrypt
             }
 
             // evaluate last block (index j - 1)
-            // Append Last Block Plaintext with Ciphertext (size:
-            // unusedLastBlockSpace) block number j-2
+            // Append Last Block Plaintext with Ciphertext 
 
-            int startByteID = 16 - unusedLastBlockSpace;
-            int endByteID = 16 - 1;
-            byte[] modifiedLastBlock = new byte[16];
-            // copy original last block to modifiedLastBlock
-            for (int byteID = 0; byteID <= 15; byteID++) {
-                modifiedLastBlock[byteID] = blockMessage[j - 1][byteID];
+            int startBlockSpace = 16 - unusedLastBlockSpace;
+            int endBlockSpace = 16 - 1;
+            byte[] lastBlock = new byte[16];
+            // copy original last block to modified last block
+            for (int index = 0; index <= 15; index++) {
+                lastBlock[index] = blockMessage[j - 1][index];
             }
 
-            for (int byteID = startByteID; byteID <= endByteID; byteID++) {
-                modifiedLastBlock[byteID] = ciphertextArray[j - 2][byteID];
+            //stealing from one block before
+            for (int index = startBlockSpace; index <= endBlockSpace; index++) {
+                lastBlock[index] = ciphertextArray[j - 2][index];
             }
+            
             // Calculate PP
             for (int p = 0; p < 16; p++) {
                 int i = j - 1;
 
-                PP[i][p] = (byte) (modifiedLastBlock[p] ^ t[i + 1][p]);
+                PP[i][p] = (byte) (lastBlock[p] ^ t[i + 1][p]);
 
             }
             // Calculate CC
@@ -258,14 +259,14 @@ public class Encrypt
             // copy cropped block j-2 to last block
             for (int byteID = 0; byteID <= 15; byteID++) {
 
-                if (byteID < startByteID) {
+                if (byteID < startBlockSpace) {
                     ciphertextArray[j - 1][byteID] = ciphertextArray[j
                             - 2][byteID];
                 } else {
                     ciphertextArray[j - 1][byteID] = (byte) 0;
                 }
             }
-            // copy last block (original) to block j - 2
+            // copy the original last block to the second last block
             for (int byteID = 0; byteID <= 15; byteID++) {
                 ciphertextArray[j - 2][byteID] = lastCiphertextMaster[byteID];
             }
