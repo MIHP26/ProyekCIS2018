@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import javax.xml.bind.DatatypeConverter;
 
 public class Encrypt
@@ -17,7 +16,6 @@ public class Encrypt
         fos.flush ();
         fos.close ();
     }
-
 
     public static void encryption (String filePath, String keyPath, String tweakValue,
             String cipherPath)
@@ -181,7 +179,7 @@ public class Encrypt
 
             // 4. Calculate cipher text
             // Calculate cipher text for all blocks except the last block
-            for (int i = 0; i < lastOne; i++) { // i represent block number
+            for (int i = 0; i < lastTwo; i++) { // i represent block number
                 for (int p = 0; p < 16; p++) {
                     ciphertextArray[i][p] = (byte) (CC[i][p] ^ t[i + 1][p]);
                 }
