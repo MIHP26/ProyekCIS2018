@@ -4,15 +4,11 @@ import javax.swing.JFrame;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 
 import java.awt.Font;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
-
-import com.sun.nio.file.SensitivityWatchEventModifier;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -20,10 +16,10 @@ import java.io.File;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
-import java.awt.Window.Type;
 
 public class Gui
 {
+	// Inisiasi variable yang akan digunakan
     private JFrame frame;
     private JTextField fileLocation;
     private JTextField keyLocation;
@@ -32,7 +28,6 @@ public class Gui
     private String resultPath;
     private String tweakValue = "c7192a71054bfeda";
     private String fileName;
-
 
     /**
      * Launch the application.
@@ -67,17 +62,21 @@ public class Gui
      */
     private void initialize ()
     {
+    	// Membuat frame dan ukurannya
         frame = new JFrame ("AES-Encryption and Decryption");
         frame.setBounds (100, 100, 450, 213);
         frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
 
+        // Membuat judul program
         JLabel lblEncryptionAndDecryption = new JLabel (
                 "Encryption and Decryption");
         lblEncryptionAndDecryption.setFont (new Font ("Gadugi", Font.BOLD, 12));
 
+        // Membuat tambahan judul program
         JLabel lblXtsaesMode = new JLabel ("XTS-AES Mode (256 bits Key)");
         lblXtsaesMode.setFont (new Font ("Gadugi", Font.PLAIN, 11));
 
+        // Tombol yang digunakan untuk membuka file yang akan dienkripsi atau didekripsi
         JButton btnOpenFile = new JButton ("Open File");
         btnOpenFile.setFont (new Font ("Tahoma", Font.PLAIN, 9));
         btnOpenFile.addActionListener (new ActionListener () {
@@ -90,17 +89,18 @@ public class Gui
             }
         });
 
+        // Tombol yang digunakan untuk membuka file yang .txt yang berisikan key
         JButton btnOpenKey = new JButton ("Open Key");
         btnOpenKey.setFont (new Font ("Tahoma", Font.PLAIN, 9));
         btnOpenKey.addActionListener (new ActionListener () {
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                // TODO Auto-generated method stub
                 openKeyActionPerformed (e);
             }
         });
 
+        //Tombol yang digunakan untuk menjalankan fungsi enkripsi
         JButton btnEncrypt = new JButton ("Encrypt");
         btnEncrypt.setFont (new Font ("Tahoma", Font.PLAIN, 10));
         btnEncrypt.addActionListener (new ActionListener () {
@@ -108,16 +108,22 @@ public class Gui
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
+            	// Pencegahan error apabila tidak ada file atau key yang dimasukkan
+            	// Memunculkan alert warning
                 if (filePath == null || keyPath == null) {
                     JOptionPane.showMessageDialog (null,
                             "File or Key Cannot be Empty", "WARNING",
                             JOptionPane.WARNING_MESSAGE);
                 } else {
-                    // dibuat default
+                    // Mengubah nama dari hasil file yang dienkripsi
+                	// Secara default nama file bagian depan berisikan "cipher_of_"
                     setResultPath (resultPath + "cipher_of_" + fileName);
                    
+                    // Melakukan enkripsi dengan cara memanggil method encryption pada kelas Encrypt
                     Encrypt.encryption (filePath, keyPath, tweakValue,
                             resultPath);
+                    
+                    // Memunculkan alert yang menandakan enkripsi telah berhasil
                     JOptionPane.showMessageDialog (null,
                             "File is successfully encrypted.\n Go check " + resultPath, "SUCCESS",
                             JOptionPane.INFORMATION_MESSAGE);
@@ -126,23 +132,29 @@ public class Gui
             }
         });
 
+        // Tombol yang digunakan untuk melakukan fungsi dekripsi
         JButton btnDecrypt = new JButton ("Decrypt");
         btnDecrypt.setFont (new Font ("Tahoma", Font.PLAIN, 10));
         btnDecrypt.addActionListener (new ActionListener () {
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
+            	// Pencegahan error apabila tidak ada file atau key yang dimasukkan
+            	// Memunculkan alert warning
                 if (filePath == null || keyPath == null) {
                     JOptionPane.showMessageDialog (null,
                             "File or Key Cannot be Empty", "WARNING",
                             JOptionPane.WARNING_MESSAGE);
                 } else {
-                    // TODO Auto-generated method stub
-                    // dibuat default
+                	// Mengubah nama dari hasil file yang dienkripsi
+                	// Secara default nama file bagian depan berisikan "messages_in_"
                     setResultPath (resultPath + "messages_in_" + fileName);
                     try {
+                    	// Melakukan dekripsi dengan cara memanggil method decryption dari kelas Decrypt
                         Decrypt.decryption (filePath, keyPath, tweakValue,
                                 resultPath);
+                        
+                        // Memunculkan alert yang menandakan dekripsi telah berhasil
                         JOptionPane.showMessageDialog (null,
                                 "File is successfully decrypted.\n Go check " + resultPath, "SUCCESS",
                                 JOptionPane.INFORMATION_MESSAGE);
@@ -153,9 +165,11 @@ public class Gui
             }
         });
 
+        // GUI untuk input file
         fileLocation = new JTextField ();
         fileLocation.setColumns (10);
 
+        // GUI untuk input key
         keyLocation = new JTextField ();
         keyLocation.setColumns (10);
 
@@ -255,18 +269,18 @@ public class Gui
 
     }
 
-
+    // Method yang dilakukan saat key dimasukkan
     protected void openKeyActionPerformed (ActionEvent e)
     {
-        // TODO Auto-generated method stub
+    	// Memilih file yang berisikan key
         JFileChooser keyChooser = new JFileChooser ();
         int returnVal = keyChooser.showOpenDialog (null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = keyChooser.getSelectedFile ();
             try {
-                // display the file name
+                // Menampilkan nama file
                 keyLocation.setText (keyChooser.getSelectedFile ().getName ());
-                // return the file path
+                // Mengembalikan path dari file
                 setKeyPath (file.getAbsolutePath ());
             } catch (Exception ex) {
                 System.out.println (
@@ -275,25 +289,22 @@ public class Gui
         }
     }
 
-
+    // Method yang dilakukan saat file yang akan dienkripsi atau didekripsi dimasukkan
     protected void openFileActionPerformed (ActionEvent e)
     {
-        // TODO Auto-generated method stub
         JFileChooser fileChooser = new JFileChooser ();
         int returnVal = fileChooser.showOpenDialog (null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile ();
             try {
-                // display file name
+                // Menampilkan nama file
                 fileLocation
                         .setText (fileChooser.getSelectedFile ().getName ());
-                // return the file path
+                // Mengembalikan path dari file yang dimasukkan
                 setFilePath (file.getAbsolutePath ());
-                // set default cipherpath
+                // Membuat default path untuk hasil enkripsi atau dekripsi
                 setResultPath (
                         file.getAbsoluteFile ().getParent () + File.separator);
-                // System.out.println(file.getCanonicalPath());
-                // System.out.println(file.getCanonicalFile().getParent());
                 System.out.println (resultPath);
                 fileName = file.getName ();
 
@@ -303,7 +314,6 @@ public class Gui
             }
         }
     }
-
 
     public void setFilePath (String filePath)
     {
